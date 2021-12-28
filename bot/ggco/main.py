@@ -1,12 +1,11 @@
 import os
 
 import disnake
-from disnake import ApplicationCommandInteraction
 from disnake.ext import commands
 
+from config import roles_config
 from config.access_config import settings
 from config.roles_config import discord_roles
-from ggco.config import roles_config
 
 client = commands.Bot(command_prefix=settings['botPrefix'])
 guild_id = client.get_guild(settings['guildId'])
