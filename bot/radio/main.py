@@ -29,4 +29,3 @@ try:
     client.run(settings['botToken'])
 except Exception as e:
     print(f'[ERROR] Failed to start bot Radio \nInfo: {e}')
-
