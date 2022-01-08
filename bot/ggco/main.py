@@ -7,13 +7,14 @@ from config import roles_config
 from config.access_config import settings
 from config.roles_config import discord_roles
 
-client = commands.Bot(command_prefix=settings['botPrefix'])
+client = commands.Bot(command_prefix=settings['botPrefix'], test_guilds=[398857722159824907])
 guild_id = client.get_guild(settings['guildId'])
 
 
 @client.event
 async def on_ready():
     print('[INFO] GGCo bot ready')
+    await load_all_cogs()
     # client.add_cog()
 
 
@@ -80,10 +81,11 @@ async def unload(ctx, extension):
 
 @commands.has_any_role(roles_config.discord_roles['admin'])
 @client.slash_command(name="load", description='Загружает модули')
+# @client.command()
 async def load(ctx, extension):
     result = ""
     if extension == "all":
-        for filename in os.listdir("./cogs"):
+        for filename in os.listdir("bot/ggco/cogs"):
             if filename.endswith(".py") and filename != "db.py":
                 try:
                     client.load_extension(f"cogs.{filename[:-3]}")
@@ -102,49 +104,17 @@ async def load(ctx, extension):
         await ctx.send(result)
 
 
-@commands.has_any_role(roles_config.discord_roles['admin'])
-@client.slash_command(name="rules", description='Отправляет правила')
-async def rules(ctx):
-    embed = disnake.Embed(title='Общие правила', color=0xe100ff)
-    embed.add_field(name="\u200b",
-                    value='```css\n1.1 На этом сервере не допускается расовая нетерпимость или крайняя ненависть любого рода.\n[Бан или предупреждение, в зависимости от содержания]```',
-                    inline=False)
+async def load_all_cogs():
+    await client.get_channel(929338243563003944).send('**LOADING ALL COGS**')
+    for filename in os.listdir("bot/ggco/cogs"):
+        if filename.endswith(".py") and filename != "db.py":
+            try:
+                client.load_extension(f"cogs.{filename[:-3]}")
+            except Exception as e:
+                await client.get_channel(929338243563003944).send(f"[ERROR] load **{filename}:** {e}\n\n")
+            else:
+                await client.get_channel(929338243563003944).send(f"**{filename[:-3]}** loaded!")
 
-    embed.add_field(name="\u200b",
-                    value='```css\n1.2 Не будьте токсиком, который портит веселье другим. Это включает в себя нацеливание на одного человека и обсирание его.\n[Бан или предупреждение, в зависимости от содержания]```',
-                    inline=False)
-
-    embed.add_field(name="\u200b",
-                    value='```css\n1.3 Не сливайте личную информацию о других членах сервера без их разрешения. Это относится и к личке.\n[Предупреждение или бан в зависимости от серьезности утечки]```',
-                    inline=False)
-
-    embed.add_field(name="\u200b", value='```css\n1.4 Не публикуйте nsfw-контент вне #nsfw.\n[Бан]```', inline=False)
-
-    embed.add_field(name="\u200b",
-                    value='```css\n1.5 Не выдавайте себя за ботов или любого члена сервера. (Через имя, ник или картинку профиля)\n[Предупреждение и бан в случае продолжения]```',
-                    inline=False)
-
-    embed.add_field(name="\u200b",
-                    value='```css\n1.6 Запрещен спам ЛЮБОГО рода, включая @everyone/@here спам, спам реакции, копирование/вставка текста, @mentions в AFK.\n[Предупреждению и бан в случае продолжения.]```',
-                    inline=False)
-
-    embed.add_field(name="\u200b",
-                    value='```css\n1.7 Не пингуйте роли без веской причины. Пингуйте роли только в экстренных случаях.\n[Предупреждение]```',
-                    inline=False)
-
-    embed.add_field(name="\u200b",
-                    value='```css\n1.8 Не выпрашивать роль/звание. Нам это не нужно, и если мы посчитаем, что вы заслуживаете роли, мы вам ее дадим.\n[Предупреждение]```',
-                    inline=False)
-
-    embed.add_field(name="\u200b",
-                    value='```css\n1.9 Используйте каналы по назначению, (в каналах «музыка» – запускайте музыку и т.д)\n[Устное предупреждение и предупреждение в случае продолжения]```',
-                    inline=False)
-
-    embed.add_field(name="\u200b",
-                    value='```css\n1.10 Не вступайте в дискуссию с офицерами на сервере после решения о наказании (например, получения предупреждения), если вы считаете, что предупреждение было неправильным, пожалуйста, решите этот вопрос в личке с тем, кто выписал предупредил.\n[Предупреждение]```',
-                    inline=False)
-
-    await ctx.send(embed=embed)
 
 
 try:
