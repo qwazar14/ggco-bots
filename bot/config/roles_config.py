@@ -3,7 +3,7 @@ discord_roles = {
     'admin': 668415545049088000
 }
 
-util_categories = {
+roles_categories = {
     'rank_category': 900832298168123403,
     'unit_type_category': 900871731500183553,
     'optional_category': 900835519968206899,
@@ -45,7 +45,8 @@ unit_roles = {
 optional_category_roles = {
     'veteran': 900899011815407636,
     'universal': 900870625084735489,
-    'warthunder': 904792459995926538
+    'warthunder': 904792459995926538,
+    'squadron_friend': 907975449798406216
 }
 general_category_roles = {
     'player': 871761260155388064,
