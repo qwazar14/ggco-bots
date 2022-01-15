@@ -45,7 +45,7 @@ unit_roles = {
 optional_category_roles = {
     'veteran': 900899011815407636,
     'universal': 900870625084735489,
-    'warthunder': 904792459995926538,
+    'ggco': 904792459995926538,
     'squadron_friend': 907975449798406216
 }
 general_category_roles = {
