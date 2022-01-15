@@ -5,7 +5,7 @@ from disnake.ext import commands
 
 from config import roles_config
 from ggco.config.access_config import settings
-from ggco.util.ranks import get_rank_id_by_name
+from ggco.util.ranks_controller import get_rank_id_by_name
 
 
 class RegistrationMenu(commands.Cog):
@@ -177,6 +177,7 @@ async def new_nickname_for_user(user, new_nickname):
 async def give_user_squadron_roles(user, guild_id):
     await user.add_roles(guild_id.get_role(roles_config.roles_categories['rank_category']))
     await user.add_roles(guild_id.get_role(roles_config.roles_categories['unit_type_category']))
+    await user.add_roles(guild_id.get_role(roles_config.optional_category_roles['ggco']))
     await user.add_roles(guild_id.get_role(get_rank_id_by_name('OR-1')))
 
 
