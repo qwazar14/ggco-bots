@@ -60,7 +60,7 @@ class BDTest(commands.Cog):
                         inline=True)
 
         class Buttons(discord.ui.View):
-            def __init__(self, client):
+            def __init__(self, client, channel):
                 super().__init__()
                 self.con = pymysql.connect(
                     host=CONFIG['host'],
@@ -68,6 +68,7 @@ class BDTest(commands.Cog):
                     password=CONFIG['password'],
                     database=CONFIG['db'])
                 self.client = client
+                self.channel = channel
 
             guild_id = self.client.get_guild(settings['guildId'])
 
@@ -89,16 +90,16 @@ class BDTest(commands.Cog):
                 # await self.info.add_reaction('✅')
                 # await ctx.delete_message(info)
                 await ctx.send(embed=new_embed)
-                await info.delete()
+                await self.channel.delete()
 
             @discord.ui.button(label='Отказать', style=discord.ButtonStyle.red)
             async def denied(self, con, medal_id):
                 pass
 
-        buttons = Buttons(self.client)
+        self.info = await ctx.send(embed=embed)
+        buttons = Buttons(self.client, self.info)
 
-        info = await ctx.send(embed=embed, view=buttons)
-
+        await self.info.edit(view=buttons)
 
 
 def setup(bot):
