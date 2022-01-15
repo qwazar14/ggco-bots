@@ -1,5 +1,6 @@
 import os
 import platform
+import time
 
 import disnake as discord
 from disnake.ext import commands
@@ -108,18 +109,30 @@ async def load(ctx, extension):
 
 
 async def load_all_cogs():
-    await client.get_channel(929338243563003944).send('**LOADING ALL COGS**')
+    embed = discord.Embed(
+        title=f"**LOADING ALL COGS**",
+        color=0xe100ff)
     print('[INFO] Loading all cogs')
     for filename in os.listdir("bot/ggco/cogs"):
         if filename.endswith(".py") and filename != "db.py":
             try:
                 client.load_extension(f"cogs.{filename[:-3]}")
-            except Exception as e:
-                await client.get_channel(929338243563003944).send(f"[ERROR] load **{filename}:** {e}\n\n")
-                print(f'[ERROR] load **{filename}:** {e}')
+            except Exception as exception:
+                embed.add_field(name=f'{filename}',
+                                value=f"```css\n[{exception}]```",
+                                inline=False)
+
+                print(f'[ERROR] load {filename}: {exception}')
             else:
-                await client.get_channel(929338243563003944).send(f"**{filename[:-3]}** loaded!")
+                embed.add_field(name=f'{filename}',
+                                value=f"```ini\n[loaded!]```",
+                                inline=True)
                 print(f'...{filename[:-3]} loaded!')
+
+    embed.add_field(name=f"```{time.strftime('%d %b %Y')}```",
+                    value=f"```fix\n{time.strftime('%H:%M:%S')}```",
+                    inline=False)
+    await client.get_channel(929338243563003944).send(embed=embed)
 
 
 async def get_system_info():
