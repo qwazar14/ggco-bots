@@ -44,49 +44,12 @@ async def get_medal_info(medal_id):
 
 class BDTest(commands.Cog):
 
-    def __init__(self, client, info):
+    def __init__(self, client):
         self.client = client
-        self.info = info
 
     @commands.has_any_role(roles_config.discord_roles['admin'])
     @commands.slash_command(name="test", description='test')
     async def test(self, ctx, user: discord.Member, medal_id: int):
-        class Buttons(discord.ui.View):
-            def __init__(self, client, info):
-                super().__init__()
-                self.con = pymysql.connect(
-                    host=CONFIG['host'],
-                    user=CONFIG['user'],
-                    password=CONFIG['password'],
-                    database=CONFIG['db'])
-                self.client = client
-                self.info = info
-
-            guild_id = self.client.get_guild(settings['guildId'])
-
-            @discord.ui.button(label='Выдать', style=discord.ButtonStyle.green)
-            async def give(self, con, medal_id):
-                user_uuid = str(user.id)
-                with self.con.cursor() as cursor:
-                    cursor.execute(
-                        f"INSERT INTO `medals` (`user_id`, `medal_id`) VALUES ('{user_uuid}', '{medal_id}')")
-                self.con.commit()
-                new_embed = discord.Embed(
-                    title=f'Медаль №{medal_id} выдана',
-                    description=f"Кому: {user.mention}",
-                    color=0x00ff00
-                )
-                new_embed.set_thumbnail(
-                    url=f'https://raw.githubusercontent.com/qwazar14/medals-images/master/{medal_id}.png')
-                # await info.edit(embed=new_embed)
-                await self.info.add_reaction('✅')
-
-            @discord.ui.button(label='Отказать', style=discord.ButtonStyle.red)
-            async def denied(self, con, medal_id):
-                pass
-
-        buttons = Buttons(self.client)
-
         embed = discord.Embed(
             title=f"Выдача медали №{medal_id}",
             description=f"Кому: {user.mention}",
@@ -95,7 +58,47 @@ class BDTest(commands.Cog):
         embed.add_field(name=await get_medal_info(medal_id),
                         value="Для выдачи нажмите соответствующую кнопку",
                         inline=True)
-        self.info = await ctx.send(embed=embed, view=buttons)
+
+        class Buttons(discord.ui.View):
+            def __init__(self, client):
+                super().__init__()
+                self.con = pymysql.connect(
+                    host=CONFIG['host'],
+                    user=CONFIG['user'],
+                    password=CONFIG['password'],
+                    database=CONFIG['db'])
+                self.client = client
+
+            guild_id = self.client.get_guild(settings['guildId'])
+
+            @discord.ui.button(label='Выдать', style=discord.ButtonStyle.green)
+            async def give(self, a, b):
+                user_uuid = str(user.id)
+                with self.con.cursor() as cursor:
+                    cursor.execute(
+                        f"INSERT INTO `medals` (`user_id`, `medal_id`) VALUES ('{user_uuid}', '{medal_id}')")
+                self.con.commit()
+                new_embed = discord.Embed(
+                    title=f'Медаль №{medal_id} выдана',
+                    description=f"Кому: {user.mention}\n"
+                                f"Кем: {ctx.user.mention}",
+                    color=0x00ff00
+                )
+                # new_embed.set_thumbnail(url=f'https://raw.githubusercontent.com/qwazar14/medals-images/master/{medal_id}.png')
+                # await info.edit(embed=new_embed)
+                # await self.info.add_reaction('✅')
+                # await ctx.delete_message(info)
+                await ctx.send(embed=new_embed)
+                await info.delete()
+
+            @discord.ui.button(label='Отказать', style=discord.ButtonStyle.red)
+            async def denied(self, con, medal_id):
+                pass
+
+        buttons = Buttons(self.client)
+
+        info = await ctx.send(embed=embed, view=buttons)
+
 
 
 def setup(bot):
