@@ -1,21 +1,24 @@
 import os
+import platform
 
-import disnake
+import disnake as discord
 from disnake.ext import commands
 
 from config import roles_config
 from config.access_config import settings
 from config.roles_config import discord_roles
 
-client = commands.Bot(command_prefix=settings['botPrefix'], test_guilds=[398857722159824907])
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix=settings['botPrefix'], intents=intents, test_guilds=[398857722159824907])
 guild_id = client.get_guild(settings['guildId'])
 
 
 @client.event
 async def on_ready():
-    print('[INFO] GGCo bot ready')
     await load_all_cogs()
-    # client.add_cog()
+    await get_system_info()
+    print('[INFO] GGCo bot ready')
+
 
 
 @client.event
@@ -34,7 +37,7 @@ async def on_command(ctx):
 async def reload(ctx, extension):
     result = ""
     if extension == "all":
-        for filename in os.listdir("./cogs"):
+        for filename in os.listdir("bot/ggco/cogs"):
             if filename.endswith(".py") and filename != "db.py":
                 try:
                     client.unload_extension(f"cogs.{filename[:-3]}")
@@ -60,7 +63,7 @@ async def reload(ctx, extension):
 async def unload(ctx, extension):
     result = ""
     if extension == "all":
-        for filename in os.listdir("./cogs"):
+        for filename in os.listdir("bot/ggco/cogs"):
             if filename.endswith(".py") and filename != "db.py":
                 try:
                     client.unload_extension(f"cogs.{filename[:-3]}")
@@ -106,15 +109,22 @@ async def load(ctx, extension):
 
 async def load_all_cogs():
     await client.get_channel(929338243563003944).send('**LOADING ALL COGS**')
+    print('[INFO] Loading all cogs')
     for filename in os.listdir("bot/ggco/cogs"):
         if filename.endswith(".py") and filename != "db.py":
             try:
                 client.load_extension(f"cogs.{filename[:-3]}")
             except Exception as e:
                 await client.get_channel(929338243563003944).send(f"[ERROR] load **{filename}:** {e}\n\n")
+                print(f'[ERROR] load **{filename}:** {e}')
             else:
                 await client.get_channel(929338243563003944).send(f"**{filename[:-3]}** loaded!")
+                print(f'...{filename[:-3]} loaded!')
 
+
+async def get_system_info():
+    os_name = platform.system()
+    print("[INFO] OS : ", os_name)
 
 
 try:
