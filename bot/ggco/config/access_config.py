@@ -3,5 +3,7 @@ settings = {
     'botName': 'GGCO Bot',
     'botId': 899687265654149151,
     'botPrefix': 'a!',
-    'guildId': 398857722159824907
+    'guildId': 398857722159824907,
+    'maxBR': 11.3,
+    'logoUrl': 'https://i.imgur.com/mhSJtPm.png'
 }
