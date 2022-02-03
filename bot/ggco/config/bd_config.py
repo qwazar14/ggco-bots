@@ -1,6 +1,6 @@
 CONFIG = {
-    'host': '31.31.196.163',
-    'user': 'u1103989_stewex',
-    'password': 'winn36podol',
-    'db': 'u1103989_wt'
+    'host': 'acc00551.mysql.ukraine.com.ua',
+    'user': 'acc00551_test',
+    'password': 'rs)38~F2gF',
+    'db': 'acc00551_test'
 }

@@ -5,5 +5,9 @@ settings = {
     'botPrefix': 'a!',
     'guildId': 398857722159824907,
     'maxBR': 11.3,
-    'logoUrl': 'https://i.imgur.com/mhSJtPm.png'
+    'logoUrl': 'https://i.imgur.com/mhSJtPm.png',
+    'logsChannelId': 929338243563003944,
+    'memberJoinedForOfficerChannelId': 938734430321782854,
+    'okColor': 0x3BA55D,
+    'noOkColor': 0xED4245
 }

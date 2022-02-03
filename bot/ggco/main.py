@@ -10,7 +10,7 @@ from config.access_config import settings
 from config.roles_config import discord_roles
 
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix=settings['botPrefix'], intents=intents, test_guilds=[398857722159824907])
+client = commands.Bot(command_prefix=settings['botPrefix'], intents=intents)
 guild_id = client.get_guild(settings['guildId'])
 
 
@@ -21,11 +21,17 @@ async def on_ready():
     print('[INFO] GGCo bot ready')
 
 
+@client.event
+async def on_member_join(member):
+    print(f"[INFO] {member} joined")
+    # await give_user_basic_roles(member)
+    await user_join_left_controller(member, True)
+
 
 @client.event
-async def on_member_joined(member):
-    # add roles
-    print(f'[INFO] {member} was given default roles')
+async def on_member_remove(member):
+    print(f"[INFO] {member} left")
+    await user_join_left_controller(member, False)
 
 
 @client.event
@@ -34,7 +40,7 @@ async def on_command(ctx):
 
 
 @commands.has_any_role(discord_roles['admin'])
-@client.slash_command(name="reload", description='Перезагружает модули', guild_ids=guild_id)
+@client.slash_command(name="reload", description='Перезагружает модули', guild_ids=[398857722159824907])
 async def reload(ctx, extension):
     result = ""
     if extension == "all":
@@ -60,7 +66,7 @@ async def reload(ctx, extension):
 
 
 @commands.has_any_role(roles_config.discord_roles['admin'])
-@client.slash_command(name="unload", description='Отключает модули')
+@client.slash_command(name="unload", description='Отключает модули', guild_ids=[398857722159824907])
 async def unload(ctx, extension):
     result = ""
     if extension == "all":
@@ -84,7 +90,7 @@ async def unload(ctx, extension):
 
 
 @commands.has_any_role(roles_config.discord_roles['admin'])
-@client.slash_command(name="load", description='Загружает модули')
+@client.slash_command(name="load", description='Загружает модули', guild_ids=[398857722159824907])
 # @client.command()
 async def load(ctx, extension):
     result = ""
@@ -132,7 +138,39 @@ async def load_all_cogs():
     embed.add_field(name=f"```{time.strftime('%d %b %Y')}```",
                     value=f"```fix\n{time.strftime('%H:%M:%S')}```",
                     inline=False)
-    await client.get_channel(929338243563003944).send(embed=embed)
+    await send_embed_to_channel(settings['logsChannelId'], embed)
+
+
+async def user_join_left_controller(member, mode):
+    if mode:
+        embed = discord.Embed(
+            title=f"{member} зашёл на сервер",
+            color=settings['okColor'])
+    else:
+        embed = discord.Embed(
+            title=f"{member} покинул сервер",
+            color=settings['noOkColor'])
+    embed.add_field(name="\u200b",
+                    value=f"Ник: {member.mention}")
+    embed.add_field(name="\u200b",
+                    value=f"Время: {time.strftime('%H:%M:%S %d %b %Y')}")
+    try:
+        embed.set_thumbnail(member.avatar)
+        await send_embed_to_channel(settings['memberJoinedForOfficerChannelId'], embed)
+    except:
+        embed.set_thumbnail(member.default_avatar)
+        await send_embed_to_channel(settings['memberJoinedForOfficerChannelId'], embed)
+
+
+async def give_user_basic_roles(member):
+    role = discord.utils.get(member.server.roles, id=roles_config.general_category_roles['new_player'])
+    await member.add_roles(member, role)
+    # await member.add_roles(roles_config.roles_categories['general_category'])
+    print(f"[INFO] {member} was given basic roles")
+
+
+async def send_embed_to_channel(channel_id, embed):
+    await client.get_channel(channel_id).send(embed=embed)
 
 
 async def get_system_info():

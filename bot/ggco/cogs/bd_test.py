@@ -1,10 +1,13 @@
 import disnake as discord
 import pymysql
+from disnake import Client
 from disnake.ext import commands
 
 from config import roles_config
 from ggco.config.access_config import settings
 from ggco.config.bd_config import CONFIG
+
+client = Client()
 
 
 async def get_medal_info(medal_id):
@@ -48,7 +51,7 @@ class BDTest(commands.Cog):
         self.client = client
 
     @commands.has_any_role(roles_config.discord_roles['admin'])
-    @commands.slash_command(name="test", description='test')
+    @commands.slash_command(name="test", description='test', guild_ids=[398857722159824907])
     async def test(self, ctx, user: discord.Member, medal_id: int):
         embed = discord.Embed(
             title=f"Выдача медали №{medal_id}",
@@ -60,7 +63,7 @@ class BDTest(commands.Cog):
                         inline=True)
 
         class Buttons(discord.ui.View):
-            def __init__(self, client, channel):
+            def __init__(self, client):
                 super().__init__()
                 self.con = pymysql.connect(
                     host=CONFIG['host'],
@@ -68,7 +71,6 @@ class BDTest(commands.Cog):
                     password=CONFIG['password'],
                     database=CONFIG['db'])
                 self.client = client
-                self.channel = channel
 
             guild_id = self.client.get_guild(settings['guildId'])
 
@@ -90,16 +92,16 @@ class BDTest(commands.Cog):
                 # await self.info.add_reaction('✅')
                 # await ctx.delete_message(info)
                 await ctx.send(embed=new_embed)
-                await self.channel.delete()
 
             @discord.ui.button(label='Отказать', style=discord.ButtonStyle.red)
             async def denied(self, con, medal_id):
                 pass
 
-        self.info = await ctx.send(embed=embed)
-        buttons = Buttons(self.client, self.info)
+        buttons = Buttons(self.client)
 
-        await self.info.edit(view=buttons)
+        message = await ctx.send(embed=embed, view=buttons)
+
+        print(message)
 
 
 def setup(bot):
