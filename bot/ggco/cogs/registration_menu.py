@@ -14,6 +14,7 @@ class RegistrationMenu(commands.Cog):
         self.client = client
 
     # @commands.command(pass_context=True)
+    @commands.has_any_role(roles_config.discord_roles['admin'])
     @commands.slash_command(name="registration_menu", description='Создает меню регистрации')
     async def registration_menu(self, ctx):
         class RegistrationMenuButtons(discord.ui.View):
