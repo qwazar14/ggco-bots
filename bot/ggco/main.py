@@ -3,11 +3,11 @@ import platform
 import time
 
 import disnake as discord
-from disnake.ext import commands
+from disnake.ext import commands, tasks
 
 from config import roles_config
 from config.access_config import settings
-from config.roles_config import discord_roles
+from config.roles_config import discord_roles, channels_roles
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix=settings['botPrefix'], intents=intents)
@@ -32,6 +32,40 @@ async def on_member_join(member):
 async def on_member_remove(member):
     print(f"[INFO] {member} left")
     await user_join_left_controller(member, False)
+
+
+@client.event
+async def on_voice_state_update(member, before, after):
+    guild = client.get_guild(settings['guildId'])
+
+    if after.channel is not None:
+        if after.channel.id != settings['squadron_battle_channel_1'] \
+                and after.channel.id != settings['squadron_battle_channel_2'] \
+                and after.channel.id != settings['waiting_channel']:
+            await member.remove_roles(guild.get_role(channels_roles['squad_1']))
+            await member.remove_roles(guild.get_role(channels_roles['squad_2']))
+            await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
+        else:
+            if after.channel.id == settings['squadron_battle_channel_1']:
+                await member.add_roles(guild.get_role(channels_roles['squad_1']))
+                await member.remove_roles(guild.get_role(channels_roles['squad_2']))
+                await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
+            elif after.channel.id == settings['squadron_battle_channel_2']:
+                await member.add_roles(guild.get_role(channels_roles['squad_2']))
+                await member.remove_roles(guild.get_role(channels_roles['squad_1']))
+                await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
+            elif after.channel.id == settings['waiting_channel']:
+                await member.add_roles(guild.get_role(channels_roles['waiting_role']))
+                await member.remove_roles(guild.get_role(channels_roles['squad_1']))
+                await member.remove_roles(guild.get_role(channels_roles['squad_2']))
+    else:
+        await member.remove_roles(guild.get_role(channels_roles['squad_1']))
+        await member.remove_roles(guild.get_role(channels_roles['squad_2']))
+        await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
+    if before.channel is not None:
+        print(f"[INFO] {member} left {before.channel}")
+    if after.channel is not None:
+        print(f"[INFO] {member} joined {after.channel}")
 
 
 @client.event

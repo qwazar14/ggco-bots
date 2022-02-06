@@ -52,3 +52,9 @@ general_category_roles = {
     'player': 871761260155388064,
     'new_player': 902122308527878144
 }
+
+channels_roles = {
+    'squad_1': 939873078224240673,
+    'squad_2': 939883954184523837,
+    'waiting_role': 939873345082630174
+}

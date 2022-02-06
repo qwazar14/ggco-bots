@@ -49,6 +49,11 @@ class BDTest(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.con = pymysql.connect(
+            host=CONFIG['host'],
+            user=CONFIG['user'],
+            password=CONFIG['password'],
+            database=CONFIG['db'])
 
     @commands.has_any_role(roles_config.discord_roles['admin'])
     @commands.slash_command(name="test", description='test', guild_ids=[398857722159824907])
@@ -63,14 +68,10 @@ class BDTest(commands.Cog):
                         inline=True)
 
         class Buttons(discord.ui.View):
-            def __init__(self, client):
+            def __init__(self, client, con):
                 super().__init__()
-                self.con = pymysql.connect(
-                    host=CONFIG['host'],
-                    user=CONFIG['user'],
-                    password=CONFIG['password'],
-                    database=CONFIG['db'])
                 self.client = client
+                self.con = con
 
             guild_id = self.client.get_guild(settings['guildId'])
 
@@ -97,11 +98,39 @@ class BDTest(commands.Cog):
             async def denied(self, con, medal_id):
                 pass
 
-        buttons = Buttons(self.client)
+        buttons = Buttons(self.client, self.con)
 
         message = await ctx.send(embed=embed, view=buttons)
 
         print(message)
+
+    @commands.has_any_role(roles_config.discord_roles['admin'])
+    @commands.slash_command(name="view", description='view all records', guild_ids=[398857722159824907])
+    async def view(self, ctx, user: discord.Member):
+        embed = discord.Embed(
+            description=f"Медали игрока {user.mention} ||{user.id}||",
+            color=0xe871ff
+        )
+        with self.con.cursor() as cursor:
+            cursor.execute("SELECT user_id, medal_id FROM `medals` WHERE `user_id`=%s AND `medal_id`=%s", (ctx.guild.id, user.id))
+            if cursor.fetchone() is None:
+                embed.add_field(
+                    name=f"Медали не найдены",
+                    value=f"** **", inline=False
+                )
+        self.con.commit()
+
+        with self.con.cursor() as cursor:
+            cursor.execute("SELECT `medal_id`, `medal_count` FROM `medals` WHERE `user_id`=%s", user.id)
+            rows = cursor.fetchall()
+            for row in rows:
+                embed.add_field(
+                    name=f"\u200b",
+                    value=f"{row[0]} {row[1]}",
+                    inline=False
+                )
+        self.con.commit()
+        await ctx.send(embed=embed)
 
 
 def setup(bot):

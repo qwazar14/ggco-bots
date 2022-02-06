@@ -2,13 +2,17 @@ import io
 import random
 import re
 
-import qrcode
+import pymysql
+import qrcode as qr
 import requests
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from config import roles_config
 from ggco.config.access_config import settings
+from ggco.config.bd_config import CONFIG
 from ggco.util import ranks_controller
+
+
 
 
 async def get_background_image(self, user, client):
@@ -82,7 +86,7 @@ async def get_user_avatar(user):
 async def get_user_qrcode(user):
     thunderskill_link = 'https://thunderskill.com/ru/stat/'
     nickname = await get_user_nickname(user)
-    qrcode_image = qrcode.make(f'{thunderskill_link}{str(nickname)}')
+    qrcode_image = qr.make(f'{thunderskill_link}{str(nickname)}')
     qrcode_image_zone = (1410, 0)
     qrcode_image_size = (190, 190)
     qrcode_image_mask = Image.new('L', qrcode_image_size, 0)
@@ -95,7 +99,6 @@ async def get_user_qrcode(user):
 async def format_user_nickname(user, card):
     user_name_text_zone = (633, 0)
     W, H = (1600, 1200)
-
 
     user_name = f'{user.nick}'
     user_name = user_name.split(']')
@@ -151,6 +154,26 @@ async def get_user_background_image(self, user, client):
 
     user_image = Image.open(user_path).convert("RGBA")
     print(f"[INFO] user_image path: {user_path}")
-
+    await get_user_medals(user)
     user_image = user_image.resize((1090, 615), Image.ANTIALIAS)
     return user_image
+
+
+async def get_user_medals(user):
+    con = pymysql.connect(
+        host=CONFIG['host'],
+        user=CONFIG['user'],
+        password=CONFIG['password'],
+        database=CONFIG['db'])
+    with con.cursor() as cursor:
+        print(f"user.id {user.id}")
+        cursor.execute("SELECT `medal_id`, FROM `medals` WHERE `user_id`=%s", user.id)
+        medals = cursor.fetchall()
+    con.commit()
+    if medals is not None:
+        medals = medals[0]
+
+    if medals is not None:
+        print(f"[INFO] {user} has medals")
+    else:
+        print(f"[INFO] {user} has no medals")

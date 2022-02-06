@@ -9,5 +9,8 @@ settings = {
     'logsChannelId': 929338243563003944,
     'memberJoinedForOfficerChannelId': 938734430321782854,
     'okColor': 0x3BA55D,
-    'noOkColor': 0xED4245
+    'noOkColor': 0xED4245,
+    'squadron_battle_channel_1': 939872463913910293,
+    'squadron_battle_channel_2': 939873944842932324,
+    'waiting_channel': 939873009752227860
 }
