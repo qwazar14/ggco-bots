@@ -24,7 +24,6 @@ async def on_ready():
 @client.event
 async def on_member_join(member):
     print(f"[INFO] {member} joined")
-    # await give_user_basic_roles(member)
     await user_join_left_controller(member, True)
 
 
