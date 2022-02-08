@@ -1,27 +1,70 @@
 import os
+import platform
+import time
 
-import disnake
-from disnake.ext import commands
+import disnake as discord
+from disnake.ext import commands, tasks
 
 from config import roles_config
 from config.access_config import settings
-from config.roles_config import discord_roles
+from config.roles_config import discord_roles, channels_roles
 
-client = commands.Bot(command_prefix=settings['botPrefix'], test_guilds=[398857722159824907])
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix=settings['botPrefix'], intents=intents)
 guild_id = client.get_guild(settings['guildId'])
 
 
 @client.event
 async def on_ready():
-    print('[INFO] GGCo bot ready')
     await load_all_cogs()
-    # client.add_cog()
+    await get_system_info()
+    print('[INFO] GGCo bot ready')
 
 
 @client.event
-async def on_member_joined(member):
-    # add roles
-    print(f'[INFO] {member} was given default roles')
+async def on_member_join(member):
+    print(f"[INFO] {member} joined")
+    await user_join_left_controller(member, True)
+
+
+@client.event
+async def on_member_remove(member):
+    print(f"[INFO] {member} left")
+    await user_join_left_controller(member, False)
+
+
+@client.event
+async def on_voice_state_update(member, before, after):
+    guild = client.get_guild(settings['guildId'])
+
+    if after.channel is not None:
+        if after.channel.id != settings['squadron_battle_channel_1'] \
+                and after.channel.id != settings['squadron_battle_channel_2'] \
+                and after.channel.id != settings['waiting_channel']:
+            await member.remove_roles(guild.get_role(channels_roles['squad_1']))
+            await member.remove_roles(guild.get_role(channels_roles['squad_2']))
+            await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
+        else:
+            if after.channel.id == settings['squadron_battle_channel_1']:
+                await member.add_roles(guild.get_role(channels_roles['squad_1']))
+                await member.remove_roles(guild.get_role(channels_roles['squad_2']))
+                await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
+            elif after.channel.id == settings['squadron_battle_channel_2']:
+                await member.add_roles(guild.get_role(channels_roles['squad_2']))
+                await member.remove_roles(guild.get_role(channels_roles['squad_1']))
+                await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
+            elif after.channel.id == settings['waiting_channel']:
+                await member.add_roles(guild.get_role(channels_roles['waiting_role']))
+                await member.remove_roles(guild.get_role(channels_roles['squad_1']))
+                await member.remove_roles(guild.get_role(channels_roles['squad_2']))
+    else:
+        await member.remove_roles(guild.get_role(channels_roles['squad_1']))
+        await member.remove_roles(guild.get_role(channels_roles['squad_2']))
+        await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
+    if before.channel is not None:
+        print(f"[INFO] {member} left {before.channel}")
+    if after.channel is not None:
+        print(f"[INFO] {member} joined {after.channel}")
 
 
 @client.event
@@ -30,11 +73,11 @@ async def on_command(ctx):
 
 
 @commands.has_any_role(discord_roles['admin'])
-@client.slash_command(name="reload", description='Перезагружает модули', guild_ids=guild_id)
+@client.slash_command(name="reload", description='Перезагружает модули', guild_ids=[398857722159824907])
 async def reload(ctx, extension):
     result = ""
     if extension == "all":
-        for filename in os.listdir("./cogs"):
+        for filename in os.listdir("bot/ggco/cogs"):
             if filename.endswith(".py") and filename != "db.py":
                 try:
                     client.unload_extension(f"cogs.{filename[:-3]}")
@@ -56,11 +99,11 @@ async def reload(ctx, extension):
 
 
 @commands.has_any_role(roles_config.discord_roles['admin'])
-@client.slash_command(name="unload", description='Отключает модули')
+@client.slash_command(name="unload", description='Отключает модули', guild_ids=[398857722159824907])
 async def unload(ctx, extension):
     result = ""
     if extension == "all":
-        for filename in os.listdir("./cogs"):
+        for filename in os.listdir("bot/ggco/cogs"):
             if filename.endswith(".py") and filename != "db.py":
                 try:
                     client.unload_extension(f"cogs.{filename[:-3]}")
@@ -80,7 +123,7 @@ async def unload(ctx, extension):
 
 
 @commands.has_any_role(roles_config.discord_roles['admin'])
-@client.slash_command(name="load", description='Загружает модули')
+@client.slash_command(name="load", description='Загружает модули', guild_ids=[398857722159824907])
 # @client.command()
 async def load(ctx, extension):
     result = ""
@@ -105,16 +148,67 @@ async def load(ctx, extension):
 
 
 async def load_all_cogs():
-    await client.get_channel(929338243563003944).send('**LOADING ALL COGS**')
+    embed = discord.Embed(
+        title=f"**LOADING ALL COGS**",
+        color=0xe100ff)
+    print('[INFO] Loading all cogs')
     for filename in os.listdir("bot/ggco/cogs"):
         if filename.endswith(".py") and filename != "db.py":
             try:
                 client.load_extension(f"cogs.{filename[:-3]}")
-            except Exception as e:
-                await client.get_channel(929338243563003944).send(f"[ERROR] load **{filename}:** {e}\n\n")
-            else:
-                await client.get_channel(929338243563003944).send(f"**{filename[:-3]}** loaded!")
+            except Exception as exception:
+                embed.add_field(name=f'{filename}',
+                                value=f"```css\n[{exception}]```",
+                                inline=False)
 
+                print(f'[ERROR] load {filename}: {exception}')
+            else:
+                embed.add_field(name=f'{filename}',
+                                value=f"```ini\n[loaded!]```",
+                                inline=True)
+                print(f'...{filename[:-3]} loaded!')
+
+    embed.add_field(name=f"```{time.strftime('%d %b %Y')}```",
+                    value=f"```fix\n{time.strftime('%H:%M:%S')}```",
+                    inline=False)
+    await send_embed_to_channel(settings['logsChannelId'], embed)
+
+
+async def user_join_left_controller(member, mode):
+    if mode:
+        embed = discord.Embed(
+            title=f"{member} зашёл на сервер",
+            color=settings['okColor'])
+    else:
+        embed = discord.Embed(
+            title=f"{member} покинул сервер",
+            color=settings['noOkColor'])
+    embed.add_field(name="\u200b",
+                    value=f"Ник: {member.mention}")
+    embed.add_field(name="\u200b",
+                    value=f"Время: {time.strftime('%H:%M:%S %d %b %Y')}")
+    try:
+        embed.set_thumbnail(member.avatar)
+        await send_embed_to_channel(settings['memberJoinedForOfficerChannelId'], embed)
+    except:
+        embed.set_thumbnail(member.default_avatar)
+        await send_embed_to_channel(settings['memberJoinedForOfficerChannelId'], embed)
+
+
+async def give_user_basic_roles(member):
+    role = discord.utils.get(member.server.roles, id=roles_config.general_category_roles['new_player'])
+    await member.add_roles(member, role)
+    # await member.add_roles(roles_config.roles_categories['general_category'])
+    print(f"[INFO] {member} was given basic roles")
+
+
+async def send_embed_to_channel(channel_id, embed):
+    await client.get_channel(channel_id).send(embed=embed)
+
+
+async def get_system_info():
+    os_name = platform.system()
+    print("[INFO] OS : ", os_name)
 
 
 try:

@@ -45,10 +45,16 @@ unit_roles = {
 optional_category_roles = {
     'veteran': 900899011815407636,
     'universal': 900870625084735489,
-    'warthunder': 904792459995926538,
+    'ggco': 904792459995926538,
     'squadron_friend': 907975449798406216
 }
 general_category_roles = {
     'player': 871761260155388064,
     'new_player': 902122308527878144
+}
+
+channels_roles = {
+    'squad_1': 939873078224240673,
+    'squad_2': 939883954184523837,
+    'waiting_role': 939873345082630174
 }
