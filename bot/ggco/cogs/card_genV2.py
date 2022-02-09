@@ -3,8 +3,8 @@ import io
 import disnake as discord
 from disnake.ext import commands
 
-from ggco.config.access_config import settings
-from ggco.util import card_controller
+from config.access_config import settings
+from util import card_controller
 
 
 class CardGen(commands.Cog):

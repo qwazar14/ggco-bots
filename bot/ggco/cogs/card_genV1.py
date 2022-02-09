@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from disnake.ext import commands
 
 from config import roles_config
-from ggco.config.access_config import settings
+from config.access_config import settings
 
 
 async def card_generator(ctx, user, client):
