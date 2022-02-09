@@ -4,8 +4,8 @@ import disnake as discord
 from disnake.ext import commands
 
 from config import roles_config
-from ggco.config.access_config import settings
-from ggco.util.ranks_controller import get_rank_id_by_name
+from config.access_config import settings
+from util.ranks_controller import get_rank_id_by_name
 
 
 class RegistrationMenu(commands.Cog):

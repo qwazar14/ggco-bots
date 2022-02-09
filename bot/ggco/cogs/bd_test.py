@@ -4,8 +4,8 @@ from disnake import Client
 from disnake.ext import commands
 
 from config import roles_config
-from ggco.config.access_config import settings
-from ggco.config.bd_config import CONFIG
+from config.access_config import settings
+from config.bd_config import CONFIG
 
 client = Client()
 

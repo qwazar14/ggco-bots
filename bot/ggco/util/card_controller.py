@@ -8,9 +8,9 @@ import requests
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from config import roles_config
-from ggco.config.access_config import settings
-from ggco.config.bd_config import CONFIG
-from ggco.util import ranks_controller
+from config.access_config import settings
+from config.bd_config import CONFIG
+from util import ranks_controller
 
 
 

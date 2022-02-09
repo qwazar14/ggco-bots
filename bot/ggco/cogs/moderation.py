@@ -9,7 +9,7 @@ import pymysql.cursors
 from disnake.ext import commands
 
 from config import roles_config
-from ggco.config.bd_config import CONFIG
+from config.bd_config import CONFIG
 
 
 class Moderation(commands.Cog):

@@ -3,7 +3,7 @@ import platform
 import time
 
 import disnake as discord
-from disnake.ext import commands, tasks
+from disnake.ext import commands
 
 from config import roles_config
 from config.access_config import settings
@@ -152,7 +152,7 @@ async def load_all_cogs():
         title=f"**LOADING ALL COGS**",
         color=0xe100ff)
     print('[INFO] Loading all cogs')
-    for filename in os.listdir("bot/ggco/cogs"):
+    for filename in os.listdir("../ggco/cogs"):
         if filename.endswith(".py") and filename != "db.py":
             try:
                 client.load_extension(f"cogs.{filename[:-3]}")
