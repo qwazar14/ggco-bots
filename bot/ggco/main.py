@@ -18,7 +18,7 @@ guild_id = client.get_guild(settings['guildId'])
 async def on_ready():
     await load_all_cogs()
     await get_system_info()
-    print('[INFO] GGCo bot ready')
+    print(f'[INFO] {client.user.name} bot ready')
 
 
 @client.event
@@ -62,9 +62,9 @@ async def on_voice_state_update(member, before, after):
         await member.remove_roles(guild.get_role(channels_roles['squad_2']))
         await member.remove_roles(guild.get_role(channels_roles['waiting_role']))
     if before.channel is not None:
-        print(f"[INFO] {member} left {before.channel}")
+        print(f"{time.strftime('%H:%M:%S')}   [INFO] {member} left {before.channel}")
     if after.channel is not None:
-        print(f"[INFO] {member} joined {after.channel}")
+        print(f"{time.strftime('%H:%M:%S')}   [INFO] {member} joined {after.channel}")
 
 
 @client.event
@@ -77,7 +77,7 @@ async def on_command(ctx):
 async def reload(ctx, extension):
     result = ""
     if extension == "all":
-        for filename in os.listdir("bot/ggco/cogs"):
+        for filename in os.listdir("cogs"):
             if filename.endswith(".py") and filename != "db.py":
                 try:
                     client.unload_extension(f"cogs.{filename[:-3]}")
@@ -103,7 +103,7 @@ async def reload(ctx, extension):
 async def unload(ctx, extension):
     result = ""
     if extension == "all":
-        for filename in os.listdir("bot/ggco/cogs"):
+        for filename in os.listdir("cogs"):
             if filename.endswith(".py") and filename != "db.py":
                 try:
                     client.unload_extension(f"cogs.{filename[:-3]}")
@@ -128,7 +128,7 @@ async def unload(ctx, extension):
 async def load(ctx, extension):
     result = ""
     if extension == "all":
-        for filename in os.listdir("bot/ggco/cogs"):
+        for filename in os.listdir("cogs"):
             if filename.endswith(".py") and filename != "db.py":
                 try:
                     client.load_extension(f"cogs.{filename[:-3]}")
