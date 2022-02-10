@@ -14,7 +14,7 @@ class CogUploader(commands.Cog):
     async def upload_cog(self, ctx):
         try:
             for attach in ctx.message.attachments:
-                await attach.save(f"bot/ggco/cogs/{attach.filename}")
+                await attach.save(f"/cogs/{attach.filename}")
                 await ctx.message.add_reaction('✅')
         except Exception as e:
             await ctx.message.add_reaction('❌')

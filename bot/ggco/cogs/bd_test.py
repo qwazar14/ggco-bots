@@ -80,7 +80,7 @@ class BDTest(commands.Cog):
                 user_uuid = str(user.id)
                 with self.con.cursor() as cursor:
                     cursor.execute(
-                        f"INSERT INTO `medals` (`user_id`, `medal_id`) VALUES ('{user_uuid}', '{medal_id}')")
+                        f"INSERT INTO `medals` (`user_id`, `medal_id`, `medal_count`) VALUES ('{user_uuid}', '{medal_id}', {medal_count}),")
                 self.con.commit()
                 new_embed = discord.Embed(
                     title=f'Медаль №{medal_id} выдана',
@@ -111,24 +111,28 @@ class BDTest(commands.Cog):
             description=f"Медали игрока {user.mention} ||{user.id}||",
             color=0xe871ff
         )
-        with self.con.cursor() as cursor:
-            cursor.execute("SELECT user_id, medal_id FROM `medals` WHERE `user_id`=%s AND `medal_id`=%s", (ctx.guild.id, user.id))
-            if cursor.fetchone() is None:
-                embed.add_field(
-                    name=f"Медали не найдены",
-                    value=f"** **", inline=False
-                )
-        self.con.commit()
+        # with self.con.cursor() as cursor:
+        #     cursor.execute("SELECT user_id, medal_id, `medal_count` FROM `medals` WHERE `user_id`=%s AND `medal_id`=%s", (ctx.guild.id, user.id))
+        #     if cursor.fetchone() is None:
+        #         embed.add_field(
+        #             name=f"Медали не найдены",
+        #             value=f"** **", inline=False
+        #         )
+        # self.con.commit()
 
         with self.con.cursor() as cursor:
             cursor.execute("SELECT `medal_id`, `medal_count` FROM `medals` WHERE `user_id`=%s", user.id)
             rows = cursor.fetchall()
+            count = 0
             for row in rows:
+                if row[0] == 1:
+                    count += 1
                 embed.add_field(
                     name=f"\u200b",
                     value=f"{row[0]} {row[1]}",
                     inline=False
                 )
+            print(count)
         self.con.commit()
         await ctx.send(embed=embed)
 

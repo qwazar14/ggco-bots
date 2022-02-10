@@ -1,7 +1,7 @@
 from disnake import FFmpegPCMAudio, PCMVolumeTransformer
 from disnake.ext import commands
 
-from ggco.config.roles_config import discord_roles
+from config.roles_config import discord_roles
 
 
 class Radio(commands.Cog):
