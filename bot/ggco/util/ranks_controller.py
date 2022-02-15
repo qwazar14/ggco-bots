@@ -2,11 +2,11 @@ from config import roles_config
 
 
 def get_all_ranks_dict():
-    return roles_config.soldier_roles | roles_config.officer_roles
+    return roles_config.soldier_roles | roles_config.real_officer_roles
 
 
 def get_officers_ranks_dict():
-    return roles_config.officer_roles
+    return roles_config.real_officer_roles
 
 
 def get_soldier_ranks_dict():
@@ -89,7 +89,9 @@ def get_previous_member_rank(member, str=False):
 
 
 def get_rank_id_by_name(name):
-    return list(get_all_ranks_dict().keys())[list(get_all_ranks_dict().values()).index(name)]
+    return list(get_all_ranks_dict().keys())[
+        list(get_all_ranks_dict().values()).index(name)
+    ]
 
 
 def get_rank_name_by_id(id):
