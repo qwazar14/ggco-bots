@@ -3,7 +3,7 @@ import pymysql
 from disnake import Client
 from disnake.ext import commands
 
-from config import roles_config as rc
+from config import roles_config as rc, roles_config
 from config.access_config import settings
 from config.bd_config import CONFIG
 from util import ranks_controller
@@ -59,19 +59,19 @@ class BDTest(commands.Cog):
             database=CONFIG["db"],
         )
 
-    @commands.has_any_role(rc.discord_roles["admin"])
+
     @commands.slash_command(
         name="medal",
         description="Выдать медаль @Пользователь №Медали",
-        guild_ids=[398857722159824907],
+        guild_ids=[settings["guildId"]],
     )
     async def medal(
-            self,
-            ctx: discord.ApplicationCommandInteraction,
-            user: discord.Member,
-            medal_id: int,
+        self,
+        ctx: discord.ApplicationCommandInteraction,
+        user: discord.Member,
+        medal_id: int,
     ):
-        print(get_officers_ranks_name())
+
         embed = discord.Embed(
             title=f"Выдача медали №{medal_id}",
             description=f"Кому: {user.mention}",
@@ -98,15 +98,15 @@ class BDTest(commands.Cog):
                 label="Выдать", style=discord.ButtonStyle.green, custom_id="give"
             )
             async def give(
-                    self, button: discord.ui.Button, interaction: discord.MessageInteraction
+                self, button: discord.ui.Button, interaction: discord.MessageInteraction
             ):
-                if interaction.user == ctx.author:
+                if interaction.user is user:
                     await interaction.response.send_message(
                         content="Вы не можете выдать медаль самому себе!",
                         ephemeral=True,
                     )
                     return
-                user_rank = ranks_controller.get_member_rank
+                user_rank = ranks_controller.get_member_rank(interaction.user)
                 if user_rank in ranks_controller.get_officers_ranks_id():
                     await interaction.response.edit_message(view=None)
                     user_uuid = str(user.id)
@@ -120,7 +120,7 @@ class BDTest(commands.Cog):
                     new_embed = discord.Embed(
                         title=f"Медаль №{medal_id} выдана",
                         description=f"Кому выдана: {user.mention}\n"
-                                    f"Кем выдана: {interaction.user.mention}",
+                        f"Кем выдана: {interaction.user.mention}",
                         color=settings["okColor"],
                     )
                     await ctx.send(embed=new_embed)
@@ -134,21 +134,22 @@ class BDTest(commands.Cog):
                 label="Отказать", style=discord.ButtonStyle.red, custom_id="deny"
             )
             async def deny(
-                    self, button: discord.ui.Button, interaction: discord.MessageInteraction
+                self, button: discord.ui.Button, interaction: discord.MessageInteraction
             ):
-                if interaction.user == ctx.author:
+
+                if interaction.user is user:
                     await interaction.response.send_message(
                         content="Вы не можете выдать медаль самому себе!",
                         ephemeral=True,
                     )
                     return
-                user_rank = ranks_controller.get_member_rank
+                user_rank = ranks_controller.get_member_rank(interaction.user)
                 if user_rank in ranks_controller.get_officers_ranks_id():
                     await interaction.response.edit_message(view=None)
                     new_embed = discord.Embed(
                         title=f"Отказано в выдачи медали №{medal_id}",
                         description=f"Кому отказано: {user.mention}\n"
-                                    f"Кем отказано: {interaction.user.mention}",
+                        f"Кем отказано: {interaction.user.mention}",
                         color=settings["noOkColor"],
                     )
                     await ctx.send(embed=new_embed)
@@ -161,45 +162,40 @@ class BDTest(commands.Cog):
         Buttons.disabled = True
         buttons = Buttons(self.client, self.con)
 
-        # buttons.add_item(button1)
-        #
-        # async def button_callback(button_inter: discord.MessageInteraction):
-        #     print("buttons.disabled = True")
-        #     buttons.disabled = True
-        #     await button_inter.send(embed=embed)
-        #     await ctx.edit_original_message(view=buttons)
-        #
-        # buttons.callback = button_callback
-
         await ctx.send(embed=embed, view=buttons)
 
-    # @commands.has_any_role(roles_config.discord_roles['admin'])
-    # @commands.slash_command(name="view", description='view all records', guild_ids=[398857722159824907])
-    # async def view(self, ctx, user: discord.Member):
-    #     embed = discord.Embed(
-    #         description=f"Медали игрока {user.mention} ||{user.id}||",
-    #         color=0xe871ff
-    #     )
-    #
-    #     for medal_id in range(16):
-    #         embed.add_field(
-    #             name=f"\u200b",
-    #             value=f"Medal **#{medal_id + 1}**, count: **{await self.get_medal_count(user, medal_id + 1)}**",
-    #             inline=False
-    #         )
-    #
-    #     await ctx.send(embed=embed)
-    #
-    # async def get_medal_count(self, user, medal_id):
-    #     with self.con.cursor() as cursor:
-    #         cursor.execute("SELECT `medal_id` FROM `MedalsDB` WHERE `user_id`=%s", user.id)
-    #         rows = cursor.fetchall()
-    #         count = 0
-    #         for row in rows:
-    #             if row[0] == medal_id:
-    #                 count += 1
-    #     # print(count)
-    #     return count
+    @commands.has_any_role(roles_config.discord_roles["admin"])
+    @commands.slash_command(
+        name="view",
+        description="Посмотреть все медали игрока",
+        guild_ids=[settings["guildId"]],
+    )
+    async def view(self, ctx, user: discord.Member):
+        embed = discord.Embed(
+            description=f"Медали игрока {user.mention} ||{user.id}||", color=0xE871FF
+        )
+
+        for medal_id in range(16):
+            embed.add_field(
+                name=f"\u200b",
+                value=f"Medal **#{medal_id + 1}**, count: **{await self.get_medal_count(user, medal_id + 1)}**",
+                inline=False,
+            )
+
+        await ctx.send(embed=embed)
+
+    async def get_medal_count(self, user, medal_id):
+        with self.con.cursor() as cursor:
+            cursor.execute(
+                "SELECT `medal_id` FROM `MedalsDB` WHERE `user_id`=%s", user.id
+            )
+            rows = cursor.fetchall()
+            count = 0
+            for row in rows:
+                if row[0] == medal_id:
+                    count += 1
+        # print(count)
+        return count
 
 
 def setup(bot):
