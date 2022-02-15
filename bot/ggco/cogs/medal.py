@@ -58,11 +58,12 @@ class BDTest(commands.Cog):
             database=CONFIG["db"],
         )
 
-    @commands.slash_command(
-        name="medal",
-        description="Выдать медаль @Пользователь №Медали",
-        guild_ids=[398857722159824907],
-    )
+    # @commands.slash_command(
+    #     name="medal",
+    #     description="Выдать медаль @Пользователь №Медали",
+    #     guild_ids=[398857722159824907],
+    # )
+    @commands.command()
     async def medal(
             self,
             ctx: discord.ApplicationCommandInteraction,
@@ -183,11 +184,12 @@ class BDTest(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.has_any_role(roles_config.discord_roles["admin"])
-    @commands.slash_command(
-        name="remove_medal",
-        description="Удалить медаль у игрока",
-        guild_ids=[398857722159824907],
-    )
+    # @commands.slash_command(
+    #     name="remove_medal",
+    #     description="Удалить медаль у игрока",
+    #     guild_ids=[398857722159824907],
+    # )
+    @commands.command()
     async def remove_medal(
             self,
             ctx: discord.ApplicationCommandInteraction,
@@ -226,7 +228,7 @@ class BDTest(commands.Cog):
                     user_uuid = str(user.id)
                     with self.con.cursor() as cursor:
                         cursor.execute(
-                            f"DELETE FROM `MedalsDB` LIMIT 1 WHERE user_id = '{user_uuid}' AND medal_id ='{medal_id};'"
+                            f"DELETE FROM `MedalsDB` WHERE user_id = '{user_uuid}' AND medal_id ={medal_id} ORDER BY 'medal_id' LIMIT 1"
                         )
                     self.con.commit()
                     new_embed = discord.Embed(
