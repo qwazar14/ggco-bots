@@ -3,11 +3,10 @@ import pymysql
 from disnake import Client
 from disnake.ext import commands
 
-from config import roles_config as rc, roles_config
+from config import roles_config
 from config.access_config import settings
 from config.bd_config import CONFIG
 from util import ranks_controller
-from util.ranks_controller import get_officers_ranks_name
 
 client = Client()
 
@@ -59,17 +58,16 @@ class BDTest(commands.Cog):
             database=CONFIG["db"],
         )
 
-
     @commands.slash_command(
         name="medal",
         description="Выдать медаль @Пользователь №Медали",
-        guild_ids=[settings["guildId"]],
+        guild_ids=[398857722159824907],
     )
     async def medal(
-        self,
-        ctx: discord.ApplicationCommandInteraction,
-        user: discord.Member,
-        medal_id: int,
+            self,
+            ctx: discord.ApplicationCommandInteraction,
+            user: discord.Member,
+            medal_id: int,
     ):
 
         embed = discord.Embed(
@@ -98,7 +96,7 @@ class BDTest(commands.Cog):
                 label="Выдать", style=discord.ButtonStyle.green, custom_id="give"
             )
             async def give(
-                self, button: discord.ui.Button, interaction: discord.MessageInteraction
+                    self, button: discord.ui.Button, interaction: discord.MessageInteraction
             ):
                 if interaction.user is user:
                     await interaction.response.send_message(
@@ -120,7 +118,7 @@ class BDTest(commands.Cog):
                     new_embed = discord.Embed(
                         title=f"Медаль №{medal_id} выдана",
                         description=f"Кому выдана: {user.mention}\n"
-                        f"Кем выдана: {interaction.user.mention}",
+                                    f"Кем выдана: {interaction.user.mention}",
                         color=settings["okColor"],
                     )
                     await ctx.send(embed=new_embed)
@@ -134,7 +132,7 @@ class BDTest(commands.Cog):
                 label="Отказать", style=discord.ButtonStyle.red, custom_id="deny"
             )
             async def deny(
-                self, button: discord.ui.Button, interaction: discord.MessageInteraction
+                    self, button: discord.ui.Button, interaction: discord.MessageInteraction
             ):
 
                 if interaction.user is user:
@@ -149,7 +147,7 @@ class BDTest(commands.Cog):
                     new_embed = discord.Embed(
                         title=f"Отказано в выдачи медали №{medal_id}",
                         description=f"Кому отказано: {user.mention}\n"
-                        f"Кем отказано: {interaction.user.mention}",
+                                    f"Кем отказано: {interaction.user.mention}",
                         color=settings["noOkColor"],
                     )
                     await ctx.send(embed=new_embed)
@@ -168,7 +166,7 @@ class BDTest(commands.Cog):
     @commands.slash_command(
         name="view",
         description="Посмотреть все медали игрока",
-        guild_ids=[settings["guildId"]],
+        guild_ids=[398857722159824907],
     )
     async def view(self, ctx, user: discord.Member):
         embed = discord.Embed(
@@ -183,6 +181,70 @@ class BDTest(commands.Cog):
             )
 
         await ctx.send(embed=embed)
+
+    @commands.has_any_role(roles_config.discord_roles["admin"])
+    @commands.slash_command(
+        name="remove_medal",
+        description="Удалить медаль у игрока",
+        guild_ids=[398857722159824907],
+    )
+    async def remove_medal(
+            self,
+            ctx: discord.ApplicationCommandInteraction,
+            user: discord.Member,
+            medal_id: int,
+    ):
+        embed = discord.Embed(
+            title=f"Удалить медаль №{medal_id}",
+            description=f"У кого: {user.mention}",
+            color=0xE100FF,
+        )
+        embed.set_thumbnail(
+            url=f"https://raw.githubusercontent.com/qwazar14/medals-images/master/{medal_id}.png"
+        )
+        embed.add_field(
+            name=await get_medal_info(medal_id),
+            value="Для удаление медали нажмите соответствующую кнопку",
+            inline=True,
+        )
+
+        class Buttons(discord.ui.View):
+            def __init__(self, client, con):
+                super().__init__()
+                self.client = client
+                self.con = con
+
+            guild_id = self.client.get_guild(settings["guildId"])
+
+            @discord.ui.button(
+                label="Удалить", style=discord.ButtonStyle.green, custom_id="remove"
+            )
+            async def remove(self, button: discord.ui.Button, interaction: discord.MessageInteraction):
+                user_rank = ranks_controller.get_member_rank(interaction.user)
+                if user_rank in ranks_controller.get_officers_ranks_id():
+                    await interaction.response.edit_message(view=None)
+                    user_uuid = str(user.id)
+                    with self.con.cursor() as cursor:
+                        cursor.execute(
+                            f"DELETE FROM `MedalsDB` LIMIT 1 WHERE user_id = '{user_uuid}' AND medal_id ='{medal_id};'"
+                        )
+                    self.con.commit()
+                    new_embed = discord.Embed(
+                        title=f"Медаль №{medal_id} удалена",
+                        description=f"У кого удалена: {user.mention}\n"
+                                    f"Кем удалена: {interaction.user.mention}",
+                        color=settings["noOkColor"],
+                    )
+                    await ctx.send(embed=new_embed)
+                else:
+                    await interaction.response.send_message(
+                        content="У вас недостаточно прав для выдачи медали.",
+                        ephemeral=True,
+                    )
+
+        buttons = Buttons(self.client, self.con)
+
+        await ctx.send(embed=embed, view=buttons)
 
     async def get_medal_count(self, user, medal_id):
         with self.con.cursor() as cursor:
