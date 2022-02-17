@@ -2,14 +2,12 @@ import io
 import random
 import re
 
-import pymysql
 import qrcode as qr
 import requests
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from config import roles_config
 from config.access_config import settings
-from config.bd_config import CONFIG
 from util import ranks_controller
 
 
@@ -25,48 +23,48 @@ async def get_background_image(self, user, client):
 
     #  soldier_roles
     if (
-        guild.get_role(ranks_controller.get_rank_id_by_name("OR-1")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OR-2")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OR-3")) in user.roles
+            guild.get_role(ranks_controller.get_rank_id_by_name("OR-1")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OR-2")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OR-3")) in user.roles
     ):
-        background_image = Image.open(r"bot/assets/images/background/OR-1-3.png")
+        background_image = Image.open(r"assets/images/background/OR-1-3.png")
     elif (
-        guild.get_role(ranks_controller.get_rank_id_by_name("OR-4")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OR-5")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OR-6")) in user.roles
+            guild.get_role(ranks_controller.get_rank_id_by_name("OR-4")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OR-5")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OR-6")) in user.roles
     ):
-        background_image = Image.open(r"bot/assets/images/background/OR-4-6.png")
+        background_image = Image.open(r"assets/images/background/OR-4-6.png")
     elif (
-        guild.get_role(ranks_controller.get_rank_id_by_name("OR-7")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OR-8")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OR-9")) in user.roles
+            guild.get_role(ranks_controller.get_rank_id_by_name("OR-7")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OR-8")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OR-9")) in user.roles
     ):
-        background_image = Image.open(r"bot/assets/images/background/OR-7-9.png")
+        background_image = Image.open(r"assets/images/background/OR-7-9.png")
     ##
 
     #  officer_roles
     elif (
-        guild.get_role(ranks_controller.get_rank_id_by_name("OF-1")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OF-2")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OF-3")) in user.roles
+            guild.get_role(ranks_controller.get_rank_id_by_name("OF-1")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OF-2")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OF-3")) in user.roles
     ):
-        background_image = Image.open(r"bot/assets/images/background/OF-1-3.png")
+        background_image = Image.open(r"assets/images/background/OF-1-3.png")
     elif guild.get_role(ranks_controller.get_rank_id_by_name("OF-4")) in user.roles:
-        background_image = Image.open(r"bot/assets/images/background/OF-4.png")
+        background_image = Image.open(r"assets/images/background/OF-4.png")
     elif (
-        guild.get_role(ranks_controller.get_rank_id_by_name("OF-5")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OF-6")) in user.roles
+            guild.get_role(ranks_controller.get_rank_id_by_name("OF-5")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OF-6")) in user.roles
     ):
-        background_image = Image.open(r"bot/assets/images/background/OF-5-6.png")
+        background_image = Image.open(r"assets/images/background/OF-5-6.png")
     elif (
-        guild.get_role(ranks_controller.get_rank_id_by_name("OF-7")) in user.roles
-        or guild.get_role(ranks_controller.get_rank_id_by_name("OF-8")) in user.roles
+            guild.get_role(ranks_controller.get_rank_id_by_name("OF-7")) in user.roles
+            or guild.get_role(ranks_controller.get_rank_id_by_name("OF-8")) in user.roles
     ):
-        background_image = Image.open(r"bot/assets/images/background/OF-7-8.png")
+        background_image = Image.open(r"assets/images/background/OF-7-8.png")
     elif guild.get_role(ranks_controller.get_rank_id_by_name("OF-9")) in user.roles:
-        background_image = Image.open(r"bot/assets/images/background/OF-9.png")
+        background_image = Image.open(r"assets/images/background/OF-9.png")
     elif guild.get_role(ranks_controller.get_rank_id_by_name("OF-10")) in user.roles:
-        background_image = Image.open(r"bot/assets/images/background/OF-10.png")
+        background_image = Image.open(r"assets/images/background/OF-10.png")
     ##
     else:
         background_image = Image.open(r"bot/assets/images/background/OR-1-3.png")
@@ -153,46 +151,80 @@ async def get_user_background_image(self, user, client):
     guild = client.get_guild(settings["guildId"])
 
     if (
-        guild.get_role(roles_config.unit_roles["tanks"]) in user.roles
-        and guild.get_role(roles_config.unit_roles["planes"]) in user.roles
+            guild.get_role(roles_config.unit_roles["tanks"]) in user.roles
+            and guild.get_role(roles_config.unit_roles["planes"]) in user.roles
     ):
         if random.randint(0, 1) == 1:
-            user_path = f"bot/assets/images/user_images/tanks/tank ({random.randint(1, 17)}).jpg"
+            user_path = f"assets/images/user_images/tanks/tank ({random.randint(1, 17)}).jpg"
         else:
-            user_path = f"bot/assets/images/user_images/planes/plane ({random.randint(1, 17)}).jpg"
+            user_path = f"assets/images/user_images/planes/plane ({random.randint(1, 17)}).jpg"
 
     elif guild.get_role(roles_config.unit_roles["tanks"]) in user.roles:
         user_path = (
-            f"bot/assets/images/user_images/tanks/tank ({random.randint(1, 17)}).jpg"
+            f"assets/images/user_images/tanks/tank ({random.randint(1, 17)}).jpg"
         )
     elif guild.get_role(roles_config.unit_roles["planes"]) in user.roles:
         user_path = (
-            f"bot/assets/images/user_images/planes/plane ({random.randint(1, 17)}).jpg"
+            f"assets/images/user_images/planes/plane ({random.randint(1, 17)}).jpg"
         )
 
     user_image = Image.open(user_path).convert("RGBA")
     print(f"[INFO] user_image path: {user_path}")
-    await get_user_medals(user)
+    # await get_user_medals(self, user)
     user_image = user_image.resize((1090, 615), Image.ANTIALIAS)
     return user_image
 
 
-async def get_user_medals(user):
-    con = pymysql.connect(
-        host=CONFIG["host"],
-        user=CONFIG["user"],
-        password=CONFIG["password"],
-        database=CONFIG["db"],
-    )
-    with con.cursor() as cursor:
-        print(f"user.id {user.id}")
-        cursor.execute("SELECT `medal_id`, FROM `medals` WHERE `user_id`=%s", user.id)
-        medals = cursor.fetchall()
-    con.commit()
-    if medals is not None:
-        medals = medals[0]
+async def get_user_medals(self, user):
+    with self.con.cursor() as cursor:
+        cursor.execute(f"SELECT * FROM `UserMedals` WHERE `user_id` = {user.id};")
+        medals_tuple = cursor.fetchone()
+    self.con.commit()
+    medals_list = list(medals_tuple)
+    medals_list.pop(0)
+    counter = 0
+    for medal_id in range(len(medals_list)):
+        if medals_list[medal_id] != 0:
+            counter = counter + 1
 
-    if medals is not None:
-        print(f"[INFO] {user} has medals")
-    else:
-        print(f"[INFO] {user} has no medals")
+    print(medals_list)
+
+    medal_zone = [-250, 850]
+    medal_width = 223
+    medal_length = 237
+    pos_x = 0
+    offset_x = 210
+    pos_y = 855
+
+    print(counter)
+    print(counter)
+    print(counter)
+    print(counter)
+    if counter <= 7:
+        offset_x = 210
+        pos_x = -180
+    elif 7 < counter <= 9:
+        offset_x = int((1 / counter) * 1400) + 20
+        pos_x = int((1 / counter) * -1300) - 50
+    elif 10 <= counter <= 15:
+        offset_x = int((1 / counter) * 1400) + 20
+        pos_x = int((1 / counter) * -1300) - 50
+    elif counter >= 16:
+        offset_x = 100
+        pos_x = -110
+    if counter != 6:
+        for i in range(counter - 7):
+            medal_width = medal_width - 14
+            medal_length = medal_length - 14
+
+    medal_placement = Image.new('RGBA', (1600, 1200), (0, 0, 0, 0))
+    for medal_id in range(len(medals_list)):
+        if medals_list[medal_id] != 0:
+            pos_x = pos_x + offset_x
+            medal_image = Image.open(f"assets/images/medals/{medal_id + 1}.png", 'r')
+            medal_image = medal_image.resize((medal_width, medal_length))
+            medal_zone[0] = medal_zone[0] + 250
+            print(f"medal_id{medal_id + 1}: {medals_list[medal_id]}")
+            medal_placement.paste(medal_image, [int(pos_x), int(pos_y)], medal_image)
+
+    return medal_placement

@@ -67,10 +67,10 @@ async def on_voice_state_update(member, before, after):
         await member.remove_roles(guild.get_role(channels_roles["squad_1"]))
         await member.remove_roles(guild.get_role(channels_roles["squad_2"]))
         await member.remove_roles(guild.get_role(channels_roles["waiting_role"]))
-    if before.channel is not None:
-        print(f"{time.strftime('%H:%M:%S')}   [INFO] {member} left {before.channel}")
-    if after.channel is not None:
-        print(f"{time.strftime('%H:%M:%S')}   [INFO] {member} joined {after.channel}")
+    # if before.channel is not None:
+    #     print(f"{time.strftime('%H:%M:%S')}   [INFO] {member} left {before.channel}")
+    # if after.channel is not None:
+    #     print(f"{time.strftime('%H:%M:%S')}   [INFO] {member} joined {after.channel}")
 
 
 @client.event

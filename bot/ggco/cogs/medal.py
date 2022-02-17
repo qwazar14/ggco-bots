@@ -99,23 +99,39 @@ class BDTest(commands.Cog):
             async def give(
                     self, button: discord.ui.Button, interaction: discord.MessageInteraction
             ):
-                if interaction.user is user:
-                    await interaction.response.send_message(
-                        content="Вы не можете выдать медаль самому себе!",
-                        ephemeral=True,
-                    )
-                    return
+                # if interaction.user is user:
+                #     await interaction.response.send_message(
+                #         content="Вы не можете выдать медаль самому себе!",
+                #         ephemeral=True,
+                #     )
+                #     return
                 user_rank = ranks_controller.get_member_rank(interaction.user)
-                if user_rank in ranks_controller.get_officers_ranks_id():
-                    await interaction.response.edit_message(view=None)
-                    user_uuid = str(user.id)
+                if user_rank in ranks_controller.get_real_officers_ranks_id():
                     with self.con.cursor() as cursor:
-                        # cursor.execute(
-                        #     f"INSERT INTO `medals` (`user_id`, `medal_id`, `medal_count`) VALUES ('{user_uuid}', '{medal_id}', {medal_count}),")
                         cursor.execute(
-                            f"INSERT INTO `MedalsDB` (`user_id`, `medal_id`) VALUES ('{user_uuid}', '{medal_id}')"
+                            f"SELECT `medal{medal_id}` FROM `UserMedals` WHERE `user_id` = {user.id};"
                         )
+                        medal_count = cursor.fetchall()
                     self.con.commit()
+                    print(f"medal_count: {medal_count}")
+                    if str(medal_count) != "()":
+                        medal_counter = medal_count[0][0]
+                        print(f"medal_counter: {medal_counter}")
+                        await interaction.response.edit_message(view=None)
+                        print(
+                            f"UPDATE `UserMedals` SET `medal{str(medal_id)}` = {medal_counter + 1} WHERE `user_id` = {user.id};")
+                        with self.con.cursor() as cursor:
+                            cursor.execute(
+                                f"UPDATE `UserMedals` SET `medal{str(medal_id)}` = {medal_counter + 1} WHERE `user_id` = {user.id};")
+                        self.con.commit()
+                    else:
+                        await interaction.response.edit_message(view=None)
+                        print(f"INSERT INTO `UserMedals` (`user_id`, `medal{medal_id}`) VALUES ('{user.id}', '1');")
+                        with self.con.cursor() as cursor:
+                            cursor.execute(
+                                f"INSERT INTO `UserMedals` (`user_id`, `medal{medal_id}`) VALUES ('{user.id}', '1');"
+                            )
+                        self.con.commit()
                     new_embed = discord.Embed(
                         title=f"Медаль №{medal_id} выдана",
                         description=f"Кому выдана: {user.mention}\n"
@@ -143,7 +159,7 @@ class BDTest(commands.Cog):
                     )
                     return
                 user_rank = ranks_controller.get_member_rank(interaction.user)
-                if user_rank in ranks_controller.get_officers_ranks_id():
+                if user_rank in ranks_controller.get_real_officers_ranks_id():
                     await interaction.response.edit_message(view=None)
                     new_embed = discord.Embed(
                         title=f"Отказано в выдачи медали №{medal_id}",
@@ -223,21 +239,52 @@ class BDTest(commands.Cog):
             )
             async def remove(self, button: discord.ui.Button, interaction: discord.MessageInteraction):
                 user_rank = ranks_controller.get_member_rank(interaction.user)
-                if user_rank in ranks_controller.get_officers_ranks_id():
+                if user_rank in ranks_controller.get_real_officers_ranks_id():
                     await interaction.response.edit_message(view=None)
-                    user_uuid = str(user.id)
+
                     with self.con.cursor() as cursor:
                         cursor.execute(
-                            f"DELETE FROM `MedalsDB` WHERE user_id = '{user_uuid}' AND medal_id ={medal_id} ORDER BY 'medal_id' LIMIT 1"
+                            f"SELECT `medal{medal_id}` FROM `UserMedals` WHERE `user_id` = {user.id};"
                         )
+                        medal_count = cursor.fetchall()
                     self.con.commit()
-                    new_embed = discord.Embed(
-                        title=f"Медаль №{medal_id} удалена",
-                        description=f"У кого удалена: {user.mention}\n"
-                                    f"Кем удалена: {interaction.user.mention}",
-                        color=settings["noOkColor"],
-                    )
-                    await ctx.send(embed=new_embed)
+                    print(f"medal_count: {medal_count}")
+                    if str(medal_count) != "()":
+                        medal_counter = medal_count[0][0]
+                        if medal_counter <= 0:
+                            new_embed = discord.Embed(
+                                title=f"Медаль №{medal_id} не удалена",
+                                description=f"У {user.mention} нет медали №{medal_id}.\n",
+                                color=settings["noOkColor"],
+                            )
+
+                        else:
+                            print(f"medal_counter: {medal_counter}")
+                            print(
+                                f"UPDATE `UserMedals` SET `medal{str(medal_id)}` = {medal_counter - 1} WHERE `user_id` = {user.id};")
+                            with self.con.cursor() as cursor:
+                                cursor.execute(
+                                    f"UPDATE `UserMedals` SET `medal{str(medal_id)}` = {medal_counter - 1} WHERE `user_id` = {user.id};")
+                            self.con.commit()
+                            new_embed = discord.Embed(
+                                title=f"Медаль №{medal_id} удалена",
+                                description=f"У кого удалена: {user.mention}\n"
+                                            f"Кем удалена: {interaction.user.mention}",
+                                color=settings["noOkColor"],
+                            )
+                        await ctx.send(embed=new_embed)
+                    else:
+                        print(f"INSERT INTO `UserMedals` (`user_id`) VALUE ('{user.id}');")
+                        with self.con.cursor() as cursor:
+                            cursor.execute(f"INSERT INTO `UserMedals` (`user_id`) VALUE ('{user.id}');")
+                        self.con.commit()
+
+                        new_embed = discord.Embed(
+                            title=f"Медаль №{medal_id} не удалена",
+                            description=f"У {user.mention} нет медали №{medal_id}.\n",
+                            color=settings["noOkColor"],
+                        )
+                        await ctx.send(embed=new_embed)
                 else:
                     await interaction.response.send_message(
                         content="У вас недостаточно прав для выдачи медали.",
@@ -252,6 +299,7 @@ class BDTest(commands.Cog):
         with self.con.cursor() as cursor:
             cursor.execute(
                 "SELECT `medal_id` FROM `MedalsDB` WHERE `user_id`=%s", user.id
+
             )
             rows = cursor.fetchall()
             count = 0
