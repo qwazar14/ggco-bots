@@ -104,6 +104,12 @@ async def get_user_qrcode(user):
     return qrcode_image, qrcode_image_zone
 
 
+async def get_user_nickname(user):
+    nickname = re.search("(?<=\]) (.*?) (?=\()", user).group(0).strip()
+    # print(f"[INFO] user nickname: {nickname}")
+    return nickname
+
+
 async def format_user_nickname(user, card):
     user_name_text_zone = (633, 0)
     W, H = (1600, 1200)
@@ -115,7 +121,7 @@ async def format_user_nickname(user, card):
 
     font_size = 200
     font_size_tmp = float(font_size)
-    print(f"Nickname length: {len(user_name)}")
+    # print(f"Nickname length: {len(user_name)}")
     for i in range(len(user_name)):
         if 9 < len(user_name) <= 12:
             font_size_tmp -= 1.5
@@ -126,7 +132,7 @@ async def format_user_nickname(user, card):
         else:
             pass
 
-    print(f"total font_size = {font_size}")
+    # print(f"total font_size = {font_size}")
 
     font = ImageFont.truetype("arialbd.ttf", font_size, encoding="unic")
     user_name_text_draw = ImageDraw.Draw(card)
@@ -138,12 +144,6 @@ async def format_user_nickname(user, card):
     user_name_text_draw.text(
         ((W - w) / 2, user_name_text_zone[1]), user_name, fill="white", font=font
     )
-
-
-async def get_user_nickname(user):
-    nickname = re.search("(?<=\]) (.*?) (?=\()", user).group(0).strip()
-    print(f"[INFO] user nickname: {nickname}")
-    return nickname
 
 
 async def get_user_background_image(self, user, client):
@@ -187,7 +187,7 @@ async def get_user_medals(self, user):
         if medals_list[medal_id] != 0:
             counter = counter + 1
 
-    print(medals_list)
+    # print(medals_list)
 
     medal_zone = [-250, 850]
     medal_width = 223
@@ -196,10 +196,7 @@ async def get_user_medals(self, user):
     offset_x = 210
     pos_y = 855
 
-    print(counter)
-    print(counter)
-    print(counter)
-    print(counter)
+    # print(counter)
     if counter <= 7:
         offset_x = 210
         pos_x = -180
@@ -224,7 +221,13 @@ async def get_user_medals(self, user):
             medal_image = Image.open(f"assets/images/medals/{medal_id + 1}.png", 'r')
             medal_image = medal_image.resize((medal_width, medal_length))
             medal_zone[0] = medal_zone[0] + 250
-            print(f"medal_id{medal_id + 1}: {medals_list[medal_id]}")
+            # print(f"medal_id{medal_id + 1}: {medals_list[medal_id]}")
             medal_placement.paste(medal_image, [int(pos_x), int(pos_y)], medal_image)
-
+            await get_medal_info(medals_list[medal_id], pos_x+100, medal_placement)
     return medal_placement
+
+
+async def get_medal_info(medal_count, pos_x, medal_placement):
+    font = ImageFont.truetype("arialbd.ttf", 50, encoding="unic")
+    medal_info = ImageDraw.Draw(medal_placement)
+    medal_info.text((pos_x, 1130), str(medal_count), fill="grey", font=font)
