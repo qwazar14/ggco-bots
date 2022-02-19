@@ -52,12 +52,12 @@ class BDTest(commands.Cog):
             database=CONFIG["db"],
         )
 
-    # @commands.command()
-    @commands.slash_command(
-        name="medal",
-        description="Выдать медаль @Пользователь №Медали",
-        guild_ids=[398857722159824907],
-    )
+    @commands.command()
+    # @commands.slash_command(
+    #     name="medal",
+    #     description="Выдать медаль @Пользователь №Медали",
+    #     guild_ids=[398857722159824907],
+    # )
     async def medal(
             self,
             ctx: discord.ApplicationCommandInteraction,
@@ -199,13 +199,13 @@ class BDTest(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    # @commands.command()
     @commands.has_any_role(roles_config.discord_roles["admin"])
-    # @commands.slash_command(
-    #     name="remove_medal",
-    #     description="Удалить медаль у игрока",
-    #     guild_ids=[398857722159824907],
-    # )
-    @commands.command()
+    @commands.slash_command(
+        name="remove_medal",
+        description="Удалить медаль у игрока",
+        guild_ids=[398857722159824907],
+    )
     async def remove_medal(
             self,
             ctx: discord.ApplicationCommandInteraction,

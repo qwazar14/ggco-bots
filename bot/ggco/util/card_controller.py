@@ -1,8 +1,9 @@
+import fnmatch
 import io
+import os
 import random
 import re
-import cv2 as cv
-import placeholder as placeholder
+
 import qrcode as qr
 import requests
 from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter
@@ -10,67 +11,6 @@ from colorthief import ColorThief
 
 from config import roles_config
 from config.access_config import settings
-from util import ranks_controller
-
-
-# async def get_background_image(self, user, client):
-#     #  NITRO
-#     global background_image
-#     guild = client.get_guild(settings["guildId"])
-#     # guild = '398857722159824907'
-#     # #  NITRO
-#     # if '853942930229559318' in user.roles:
-#     #     background_image = Image.open(r'bot/assets/images/background/NITRO.png')
-#     # ##
-#
-#     #  soldier_roles
-#     if (
-#             guild.get_role(ranks_controller.get_rank_id_by_name("OR-1")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OR-2")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OR-3")) in user.roles
-#     ):
-#         background_image = Image.open(r"assets/images/background/OR-1-3.png")
-#     elif (
-#             guild.get_role(ranks_controller.get_rank_id_by_name("OR-4")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OR-5")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OR-6")) in user.roles
-#     ):
-#         background_image = Image.open(r"assets/images/background/OR-4-6.png")
-#     elif (
-#             guild.get_role(ranks_controller.get_rank_id_by_name("OR-7")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OR-8")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OR-9")) in user.roles
-#     ):
-#         background_image = Image.open(r"assets/images/background/OR-7-9.png")
-#     ##
-#
-#     #  officer_roles
-#     elif (
-#             guild.get_role(ranks_controller.get_rank_id_by_name("OF-1")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OF-2")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OF-3")) in user.roles
-#     ):
-#         background_image = Image.open(r"assets/images/background/OF-1-3.png")
-#     elif guild.get_role(ranks_controller.get_rank_id_by_name("OF-4")) in user.roles:
-#         background_image = Image.open(r"assets/images/background/OF-4.png")
-#     elif (
-#             guild.get_role(ranks_controller.get_rank_id_by_name("OF-5")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OF-6")) in user.roles
-#     ):
-#         background_image = Image.open(r"assets/images/background/OF-5-6.png")
-#     elif (
-#             guild.get_role(ranks_controller.get_rank_id_by_name("OF-7")) in user.roles
-#             or guild.get_role(ranks_controller.get_rank_id_by_name("OF-8")) in user.roles
-#     ):
-#         background_image = Image.open(r"assets/images/background/OF-7-8.png")
-#     elif guild.get_role(ranks_controller.get_rank_id_by_name("OF-9")) in user.roles:
-#         background_image = Image.open(r"assets/images/background/OF-9.png")
-#     elif guild.get_role(ranks_controller.get_rank_id_by_name("OF-10")) in user.roles:
-#         background_image = Image.open(r"assets/images/background/OF-10.png")
-#     ##
-#     else:
-#         background_image = Image.open(r"bot/assets/images/background/OR-1-3.png")
-#     return background_image
 from util.ranks_controller import get_member_rank
 
 
@@ -154,33 +94,37 @@ async def draw_user_rank(user, card):
     user_rank_text_draw.text(user_rank_text_zone, user_rank, fill="white", font=font)
 
 
+async def count_jpg_files_in_folder(path):
+    return len(fnmatch.filter(os.listdir(path), '*.jpg'))
+
+
+async def get_background_image_path(user, guild):
+    try:
+        background_images_path = f"assets/images/background/user_images/{user.id}"
+        random_last_index = await count_jpg_files_in_folder(path=background_images_path)
+    except FileNotFoundError:
+        if (guild.get_role(roles_config.unit_roles["tanks"]) in user.roles and guild.get_role(
+                roles_config.unit_roles["planes"]) in user.roles):
+            if random.randint(0, 1) == 1:
+                background_images_path = f"assets/images/background/tanks_images"
+            else:
+                background_images_path = f"assets/images/background/planes_images"
+        elif guild.get_role(roles_config.unit_roles["tanks"]) in user.roles:
+            background_images_path = f"assets/images/background/tanks_images"
+        elif guild.get_role(roles_config.unit_roles["planes"]) in user.roles:
+            background_images_path = f"assets/images/background/planes_images"
+        random_last_index = await count_jpg_files_in_folder(path=background_images_path)
+    image_path = f"{background_images_path}/({random.randint(1, random_last_index)}).jpg"
+    return image_path
+
+
 async def get_user_background_image(self, user, client):
-    global image_path
     random.seed(None, version=2)
     guild = client.get_guild(settings["guildId"])
 
-    # if (
-    #         guild.get_role(roles_config.unit_roles["tanks"]) in user.roles
-    #         and guild.get_role(roles_config.unit_roles["planes"]) in user.roles
-    # ):
-    #     if random.randint(0, 1) == 1:
-    #         image_path = f"assets/images/user_images/tanks/tank ({random.randint(1, 17)}).jpg"
-    #     else:
-    #         image_path = f"assets/images/user_images/planes/plane ({random.randint(1, 17)}).jpg"
-    #
-    # elif guild.get_role(roles_config.unit_roles["tanks"]) in user.roles:
-    #     image_path = (
-    #         f"assets/images/user_images/tanks/tank ({random.randint(1, 17)}).jpg"
-    #     )
-    # elif guild.get_role(roles_config.unit_roles["planes"]) in user.roles:
-    #     image_path = (
-    #         f"assets/images/user_images/planes/plane ({random.randint(1, 17)}).jpg"
-    #     )
-    image_path = f"assets/images/test_set/plane ({random.randint(1, 51)}).jpg"
+    image_path = await get_background_image_path(user, guild)
     user_image = Image.open(image_path).convert("RGBA")
-    # await create_gradient(user_path)
-    print(f"[INFO] user_image path: {image_path}")
-    # await get_user_medals(self, user)
+    # print(f"[INFO] user_image path: {image_path}")
     user_image = user_image.resize((1580, 580), Image.ANTIALIAS)
 
     gradient = await create_gradient(image_path)
@@ -188,7 +132,6 @@ async def get_user_background_image(self, user, client):
 
 
 async def get_user_medals(self, user):
-
     with self.con.cursor() as cursor:
         cursor.execute(f"SELECT * FROM `UserMedals` WHERE `user_id` = {user.id};")
         medals_tuple = cursor.fetchone()
@@ -222,21 +165,21 @@ async def get_user_medals(self, user):
     for medal_id in range(len(medals_list)):
         if medals_list[medal_id] != 0:
             pos_x = pos_x + offset_x
-            medal_image = Image.open(
-                f"assets/images/medals/medal ({medal_id + 1}).png", "r"
-            ).convert(("RGBA"))
+            # medal_path = await get_medals_images(medal_id, medals_list[medal_id])
+            # medal_image = Image.open(medal_path, "r").convert(("RGBA"))
+            medal_image = await get_medals_images(medal_id + 1, medals_list[medal_id])
             medal_image = medal_image.resize((400, 400))
             medal_zone[0] = medal_zone[0] + 250
             # print(f"medal_id{medal_id + 1}: {medals_list[medal_id]}")
             medal_placement.paste(medal_image, [int(pos_x), int(pos_y)], medal_image)
-            await get_medal_info(medals_list[medal_id], pos_x+180, medal_placement)
+            await get_medal_info(medals_list[medal_id], pos_x + 180, medal_placement)
     return medal_placement
 
 
 async def get_medal_info(medal_count, pos_x, medal_placement):
     font = ImageFont.truetype("assets/fonts/Montserrat-ExtraLight.ttf", 50, encoding="unic")
     medal_info = ImageDraw.Draw(medal_placement)
-    medal_info.text((pos_x + 3, 1080+3), str(medal_count), fill="black", font=font)
+    medal_info.text((pos_x + 3, 1080 + 3), str(medal_count), fill="black", font=font)
     medal_info.text((pos_x, 1080), str(medal_count), fill="white", font=font)
 
 
@@ -266,6 +209,25 @@ async def create_gradient(image_path):
     # new_gradient = full_gradient
     new_gradient = new_gradient.resize((1580, 580))
     return new_gradient
+
+
+async def get_medals_images(medal_id, medal_count):
+    image = Image.open(f"assets/images/medals/medal ({medal_id}).png").convert("RGBA")
+    if medal_id in range(1, 5):
+        if medal_count >= 16:
+            image = Image.open(f"assets/images/medals/additional_medals/medal{medal_id}_2.png").convert("RGBA")
+        elif medal_count >= 4:
+            image = Image.open(f"assets/images/medals/additional_medals/medal{medal_id}_1.png").convert("RGBA")
+
+    elif medal_id == 6 or medal_id == 8 and medal_count >= 5:
+        image = Image.open(f"assets/images/medals/additional_medals/medal{medal_id}_1.png").convert("RGBA")
+
+    elif medal_id == 13:
+        for i in range(5):
+            if medal_count == 5 - i + 1:
+                image = Image.open(f"assets/images/medals/additional_medals/medal{medal_id}_{i}.png").convert("RGBA")
+
+    return image
 
 
 def create_rounded_rectangle_mask(size, radius, alpha=255):
