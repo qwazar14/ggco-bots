@@ -95,7 +95,7 @@ async def draw_user_rank(user, card):
 
 
 async def count_jpg_files_in_folder(path):
-    return len(fnmatch.filter(os.listdir(path), '*.jpg'))
+    return len(fnmatch.filter(os.listdir(path), "*.jpg"))
 
 
 async def get_background_image_path(user, guild):
@@ -103,8 +103,10 @@ async def get_background_image_path(user, guild):
         background_images_path = f"assets/images/background/user_images/{user.id}"
         random_last_index = await count_jpg_files_in_folder(path=background_images_path)
     except FileNotFoundError:
-        if (guild.get_role(roles_config.unit_roles["tanks"]) in user.roles and guild.get_role(
-                roles_config.unit_roles["planes"]) in user.roles):
+        if (
+            guild.get_role(roles_config.unit_roles["tanks"]) in user.roles
+            and guild.get_role(roles_config.unit_roles["planes"]) in user.roles
+        ):
             if random.randint(0, 1) == 1:
                 background_images_path = f"assets/images/background/tanks_images"
             else:
@@ -114,7 +116,9 @@ async def get_background_image_path(user, guild):
         elif guild.get_role(roles_config.unit_roles["planes"]) in user.roles:
             background_images_path = f"assets/images/background/planes_images"
         random_last_index = await count_jpg_files_in_folder(path=background_images_path)
-    image_path = f"{background_images_path}/({random.randint(1, random_last_index)}).jpg"
+    image_path = (
+        f"{background_images_path}/({random.randint(1, random_last_index)}).jpg"
+    )
     return image_path
 
 
@@ -177,7 +181,9 @@ async def get_user_medals(self, user):
 
 
 async def get_medal_info(medal_count, pos_x, medal_placement):
-    font = ImageFont.truetype("assets/fonts/Montserrat-ExtraLight.ttf", 50, encoding="unic")
+    font = ImageFont.truetype(
+        "assets/fonts/Montserrat-ExtraLight.ttf", 50, encoding="unic"
+    )
     medal_info = ImageDraw.Draw(medal_placement)
     medal_info.text((pos_x + 3, 1080 + 3), str(medal_count), fill="black", font=font)
     medal_info.text((pos_x, 1080), str(medal_count), fill="white", font=font)
@@ -215,17 +221,25 @@ async def get_medals_images(medal_id, medal_count):
     image = Image.open(f"assets/images/medals/medal ({medal_id}).png").convert("RGBA")
     if medal_id in range(1, 5):
         if medal_count >= 16:
-            image = Image.open(f"assets/images/medals/additional_medals/medal{medal_id}_2.png").convert("RGBA")
+            image = Image.open(
+                f"assets/images/medals/additional_medals/medal{medal_id}_2.png"
+            ).convert("RGBA")
         elif medal_count >= 4:
-            image = Image.open(f"assets/images/medals/additional_medals/medal{medal_id}_1.png").convert("RGBA")
+            image = Image.open(
+                f"assets/images/medals/additional_medals/medal{medal_id}_1.png"
+            ).convert("RGBA")
 
     elif medal_id == 6 or medal_id == 8 and medal_count >= 5:
-        image = Image.open(f"assets/images/medals/additional_medals/medal{medal_id}_1.png").convert("RGBA")
+        image = Image.open(
+            f"assets/images/medals/additional_medals/medal{medal_id}_1.png"
+        ).convert("RGBA")
 
     elif medal_id == 13:
         for i in range(5):
             if medal_count == 5 - i + 1:
-                image = Image.open(f"assets/images/medals/additional_medals/medal{medal_id}_{i}.png").convert("RGBA")
+                image = Image.open(
+                    f"assets/images/medals/additional_medals/medal{medal_id}_{i}.png"
+                ).convert("RGBA")
 
     return image
 
