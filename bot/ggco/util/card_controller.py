@@ -99,13 +99,14 @@ async def count_jpg_files_in_folder(path):
 
 
 async def get_background_image_path(user, guild):
+    random.seed(None, version=2)
     try:
         background_images_path = f"assets/images/background/user_images/{user.id}"
         random_last_index = await count_jpg_files_in_folder(path=background_images_path)
     except FileNotFoundError:
         if (
-            guild.get_role(roles_config.unit_roles["tanks"]) in user.roles
-            and guild.get_role(roles_config.unit_roles["planes"]) in user.roles
+                guild.get_role(roles_config.unit_roles["tanks"]) in user.roles
+                and guild.get_role(roles_config.unit_roles["planes"]) in user.roles
         ):
             if random.randint(0, 1) == 1:
                 background_images_path = f"assets/images/background/tanks_images"
@@ -122,16 +123,29 @@ async def get_background_image_path(user, guild):
     return image_path
 
 
-async def get_user_background_image(self, user, client):
-    random.seed(None, version=2)
+async def is_user_black_and_white(user):
+    user_rank = get_member_rank(user)
+    if user_rank in (roles_config.or_1_3 | roles_config.or_4_6):
+        return True
+    else:
+        return False
+
+
+async def convert_image_to_black_and_white(user, image):
+    if await is_user_black_and_white(user):
+        return image.convert("L")
+    else:
+        return image
+
+
+async def get_user_background_image(user, client):
     guild = client.get_guild(settings["guildId"])
 
     image_path = await get_background_image_path(user, guild)
     user_image = Image.open(image_path).convert("RGBA")
-    # print(f"[INFO] user_image path: {image_path}")
     user_image = user_image.resize((1580, 580), Image.ANTIALIAS)
-
-    gradient = await create_gradient(image_path)
+    user_image = await convert_image_to_black_and_white(user=user, image=user_image)
+    gradient = await create_gradient(image_path, user)
     return user_image, gradient
 
 
@@ -190,20 +204,15 @@ async def get_medal_info(medal_count, pos_x, medal_placement):
 
 
 async def get_color_scheme(image_path):
-    # image = Image.open(image_path)
-    # color_scheme = ColorThief(image_path)
-    color_pallete = ColorThief(image_path).get_palette(color_count=4)
-    print(f"get_palette: {color_pallete}")
-    return color_pallete
+    return ColorThief(image_path).get_palette(color_count=4)
 
 
-async def create_gradient(image_path):
+async def create_gradient(image_path, user):
     full_gradient = Image.new("RGBA", (1600, 600), (0, 0, 0, 255))
-    # placeholder = Image.new('RGBA', (1600, 600), (127, 127, 127, 255))
     colors = await get_color_scheme(image_path)
     gradient_zone_width = 0
     gradient_zone_height = 0
-    # full_gradient.paste(placeholder,(800,500),placeholder)
+
     for i in range(4):
         gradient = Image.new("RGB", (800, 300), (colors[i]))
         if i == 2:
@@ -211,9 +220,10 @@ async def create_gradient(image_path):
             gradient_zone_width = gradient_zone_width - 1600
         full_gradient.paste(gradient, (gradient_zone_width, gradient_zone_height))
         gradient_zone_width = gradient_zone_width + 800
+
     new_gradient = full_gradient.filter(ImageFilter.GaussianBlur(radius=200))
-    # new_gradient = full_gradient
     new_gradient = new_gradient.resize((1580, 580))
+    new_gradient = await convert_image_to_black_and_white(user=user, image=new_gradient)
     return new_gradient
 
 
