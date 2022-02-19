@@ -49,26 +49,32 @@ class CardGenV3(commands.Cog):
             self, user, self.client
         )
         user_image_zone = (255, 190)
-        user_image_mask = card_controller.create_rounded_rectangle_mask((0, 0), 50, 255)
+        user_image_mask = card_controller.create_rounded_rectangle_mask((1580, 580), 50, 255)
 
-        await card_controller.format_user_nickname(user, card)
 
-        try:
-            medal_image = await card_controller.get_user_medals(self, user)
-            card.paste(medal_image, (0, 0), medal_image)
-        except Exception:
-            print(f"INSERT INTO `UserMedals` (`user_id`) VALUE ('{user.id}');")
-            with self.con.cursor() as cursor:
-                cursor.execute(f"INSERT INTO `UserMedals` (`user_id`) VALUE ('{user.id}');")
-            self.con.commit()
+
 
         # gradient = await create_gradient()
 
         gradient_mask = card_controller.create_rounded_rectangle_mask((1580, 580), 50, 255)
-        card.paste(gradient, (10, 610), gradient_mask)
-        card.paste(gradient, (10, 10), gradient_mask)
 
-        card.paste(user_image, user_image_zone, user_image_mask)
+        card.paste(gradient, (10, 610), gradient_mask)
+        card.paste(user_image, (10, 10), user_image_mask)
+        await card_controller.draw_user_nickname(user, card)
+        await card_controller.draw_user_rank(user, card)
+
+        # try:
+        #     medal_image = await card_controller.get_user_medals(self, user)
+        #     card.paste(medal_image, (0, 0), medal_image)
+        # except Exception:
+        #     print(f"INSERT INTO `UserMedals` (`user_id`) VALUE ('{user.id}');")
+        #     with self.con.cursor() as cursor:
+        #         cursor.execute(f"INSERT INTO `UserMedals` (`user_id`) VALUE ('{user.id}');")
+        #     self.con.commit()
+        medal_image = await card_controller.get_user_medals(self, user)
+        card.paste(medal_image, (0, 0), medal_image)
+
+
 
 
 

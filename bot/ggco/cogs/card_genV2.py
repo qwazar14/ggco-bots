@@ -50,7 +50,7 @@ class CardGenV2(commands.Cog):
         user_image_zone = (255, 190)
         card.paste(user_image, user_image_zone, user_image)
 
-        await card_controller.format_user_nickname(user, card)
+        await card_controller.draw_user_nickname(user, card)
 
         try:
             medal_image = await card_controller.get_user_medals(self, user)
