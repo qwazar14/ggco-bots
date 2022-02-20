@@ -40,13 +40,13 @@ class RegistrationMenu(commands.Cog):
                 user = ctx.user
                 new_nickname = ""
                 await ctx.response.send_message(
-                    content="Введите ник в игре *(у вас есть 1 минута)* ",
+                    content="Введите ник в игре *(у вас есть 2 минуты)* ",
                     ephemeral=True,
                 )
                 try:
                     nickname_user = await get_user_response(self.client, ctx)
                     await ctx.edit_original_message(
-                        content="Как Вас зовут? *(у вас есть 1 минута)*"
+                        content="Как Вас зовут? *(у вас есть 2 минуты)*"
                     )
                 except asyncio.TimeoutError:
                     timeout_error_call = await timeout_error(ctx)
@@ -55,7 +55,7 @@ class RegistrationMenu(commands.Cog):
                     try:
                         name_user = await get_user_response(self.client, ctx)
                         await ctx.edit_original_message(
-                            content="Введите ваш максимальный БР *(у вас есть 1 минута)*"
+                            content="Введите ваш максимальный БР *(у вас есть 2 минуты)*"
                         )
                     except asyncio.TimeoutError:
                         timeout_error_call = await timeout_error(ctx)
@@ -98,13 +98,13 @@ class RegistrationMenu(commands.Cog):
             ):
                 user = ctx.user
                 await ctx.response.send_message(
-                    content="Введите ник в игре *(у вас есть 1 минута)* ",
+                    content="Введите ник в игре *(у вас есть 2 минуты)* ",
                     ephemeral=True,
                 )
                 try:
                     nickname_user = await get_user_response(self.client, ctx)
                     await ctx.edit_original_message(
-                        content="Как Вас зовут? *(у вас есть 1 минута)*"
+                        content="Как Вас зовут? *(у вас есть 2 минуты)*"
                     )
                 except asyncio.TimeoutError:
                     timeout_error_call = await timeout_error(ctx)
@@ -190,7 +190,7 @@ async def timeout_error(interaction):
 async def get_user_response(client, interaction):
     msg = await client.wait_for(
         "message",
-        timeout=60,
+        timeout=120,
         check=lambda m: m.author == interaction.user
         and m.channel == interaction.channel,
     )

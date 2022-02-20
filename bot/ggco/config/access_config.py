@@ -2,7 +2,7 @@ settings = {
     "botToken": "OTAwODU5NjMwMzI0OTczNjA4.YXHc6Q.sGMVT5uMZ3yZLmk7_ET3c0M-flE",
     "botName": "GGCO Bot",
     "botId": 899687265654149151,
-    "botPrefix": "t!",
+    "botPrefix": "!",
     "guildId": 398857722159824907,
     "maxBR": 11.3,
     "logoUrl": "https://i.imgur.com/mhSJtPm.png",

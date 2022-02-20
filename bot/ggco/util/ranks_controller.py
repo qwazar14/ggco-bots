@@ -2,10 +2,14 @@ from config import roles_config
 
 
 def get_all_ranks_dict():
-    return roles_config.soldier_roles | roles_config.real_officer_roles
+    return roles_config.soldier_roles | roles_config.real_officer_roles | roles_config.full_officer_roles
 
 
 def get_officers_ranks_dict():
+    return roles_config.full_officer_roles
+
+
+def get_real_officers_ranks_dict():
     return roles_config.real_officer_roles
 
 
@@ -19,6 +23,10 @@ def get_all_ranks_id():
 
 def get_officers_ranks_id():
     return list(get_officers_ranks_dict().keys())
+
+
+def get_real_officers_ranks_id():
+    return list(get_real_officers_ranks_dict().keys())
 
 
 def get_soldier_ranks_id():
