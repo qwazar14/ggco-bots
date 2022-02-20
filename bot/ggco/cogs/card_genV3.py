@@ -19,14 +19,18 @@ class CardGenV3(commands.Cog):
             database=CONFIG["db"],
         )
 
-    @commands.command(pass_context=True)
+    # @commands.command(pass_context=True)
+    @commands.slash_command(
+        name="card",
+        description="Показать карточку игрока",
+        guild_ids=[398857722159824907],
+    )
     async def card(self, ctx, user: discord.Member = None):
         if user is None:
             user = ctx.author
 
         output = io.BytesIO()
 
-        # card = background_image
         card = Image.new("RGBA", (1600, 1200), (0, 0, 0, 0))
 
         user_image, gradient = await card_controller.get_user_background_image(

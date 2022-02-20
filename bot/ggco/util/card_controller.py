@@ -112,13 +112,13 @@ async def get_background_image_path(user, guild):
                 background_images_path = f"assets/images/background/tanks_images"
             else:
                 background_images_path = f"assets/images/background/planes_images"
-        elif guild.get_role(roles_config.unit_roles["tanks"]) in user.roles:
-            background_images_path = f"assets/images/background/tanks_images"
         elif guild.get_role(roles_config.unit_roles["planes"]) in user.roles:
             background_images_path = f"assets/images/background/planes_images"
+        else:
+            background_images_path = f"assets/images/background/tanks_images"
         random_last_index = await count_jpg_files_in_folder(path=background_images_path)
     image_path = (
-        f"{background_images_path}/({random.randint(1, random_last_index)}).jpg"
+        f"{background_images_path}/bg ({random.randint(1, random_last_index)}).jpg"
     )
     return image_path
 

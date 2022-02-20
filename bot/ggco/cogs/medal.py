@@ -52,12 +52,12 @@ class BDTest(commands.Cog):
             database=CONFIG["db"],
         )
 
-    @commands.command()
-    # @commands.slash_command(
-    #     name="medal",
-    #     description="Выдать медаль @Пользователь №Медали",
-    #     guild_ids=[398857722159824907],
-    # )
+    # @commands.command()
+    @commands.slash_command(
+        name="medal",
+        description="Выдать медаль №Медали",
+        guild_ids=[398857722159824907],
+    )
     async def medal(
             self,
             ctx: discord.ApplicationCommandInteraction,
@@ -94,12 +94,12 @@ class BDTest(commands.Cog):
                 async def give(
                         self, button: discord.ui.Button, interaction: discord.MessageInteraction
                 ):
-                    # if interaction.user is user:
-                    #     await interaction.response.send_message(
-                    #         content="Вы не можете выдать медаль самому себе!",
-                    #         ephemeral=True,
-                    #     )
-                    #     return
+                    if interaction.user is user:
+                        await interaction.response.send_message(
+                            content="Вы не можете выдать медаль самому себе!",
+                            ephemeral=True,
+                        )
+                        return
                     user_rank = ranks_controller.get_member_rank(interaction.user)
                     if user_rank in ranks_controller.get_real_officers_ranks_id():
                         with self.con.cursor() as cursor:
